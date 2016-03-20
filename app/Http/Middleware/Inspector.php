@@ -18,18 +18,14 @@ class Inspector {
 
     const INSPECTOR = 3;
 
-    public function handle($request, Closure $next) {
+    public function handle($request, Closure $next)
+    {
         $response = $next($request);
 
-        // Verified admin user
-//        $user = JWTAuth::parseToken()->authenticate();
-//
-//        if ($user->rolesUser->role_id === Inspector::INSPECTOR) {
-//            return $response;
-//        }
+        if ($request->session()->get('role') == User::INSPECTOR) {
+            return $response;
+        }
 
-        return $response;
-
-//        return response()->json(['error' => 'Not authorized'], 403);
+        return response()->json(['error' => 'Not authorized'], 401);
     }
 }
