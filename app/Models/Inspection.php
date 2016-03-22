@@ -55,10 +55,10 @@ class Inspection extends Model {
      */
     public function inspectionOutcomes() {
         $outcomes = DB::table('inspection_outcomes')->select('*')->get();
-        $harnessCharges = DB::table('billing_options')->select('amount')->where('billing_type', $this->outcome_charges)->get();
+        $harnessCharges = DB::table('billing_options')->select('amount')->where('billing_type', $this->harness_charges)->get();
         $outcomeCharges = DB::table('billing_options')->select('amount', 'type')
             ->join('billing_types', 'billing_options.billing_type', '=', 'billing_types.id')
-            ->whereIn('billing_type', $this->harness_charges)->get();
+            ->whereIn('billing_type', $this->outcome_charges)->get();
         $tarpCharges = DB::table('billing_options')->select('amount')->whereIn('billing_type', $this->tarp_charges)->get();
 
         return response()->json(compact('outcomes', 'harnessCharges', 'outcomeCharges', 'tarpCharges'));
