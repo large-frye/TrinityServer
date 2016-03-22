@@ -16,15 +16,15 @@ use Illuminate\Support\Facades\Input;
 use League\Flysystem\Exception;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
+const OUTCOME_CHARGES = [1, 2, 3, 4, 5, 6, 7];
+const HARNESS_CHARGE = 9;
+const TARP_CHARGES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+
 class Inspection extends Model {
 
     var $workorder;
 
     protected $table = 'inspection_meta';
-
-    const OUTCOME_CHARGES = [1, 2, 3, 4, 5, 6, 7];
-    const HARNESS_CHARGE = 9;
-    const TARP_CHARGES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
 
     public function workorder() {
         return $this->belongsTo('App\Models\Workorder', 'id', 'workorder_id');
@@ -41,11 +41,11 @@ class Inspection extends Model {
 
     public function inspectionOutcomes() {
         $outcomes = DB::table('inspection_outcomes')->select('*')->get();
-        $harnessCharges = DB::table('billing_options')->select('amount')->where('billing_type', self::HARNESS_CHARGE)->get();
+        $harnessCharges = DB::table('billing_options')->select('amount')->where('billing_type', HARNESS_CHARGE)->get();
         $outcomeCharges = DB::table('billing_options')->select('amount', 'type')
             ->join('billing_types', 'billing_options.billing_type', '=', 'billing_types.id')
-            ->whereIn('billing_type', self::OUTCOME_CHARGES)->get();
-        $tarpCharges = DB::table('billing_options')->select('amount')->whereIn('billing_type', self::TARP_CHARGES)->get();
+            ->whereIn('billing_type', OUTCOME_CHARGES)->get();
+        $tarpCharges = DB::table('billing_options')->select('amount')->whereIn('billing_type', TARP_CHARGES)->get();
 
         return response()->json(compact('outcomes', 'harnessCharges', 'outcomeCharges', 'tarpCharges'));
     }
