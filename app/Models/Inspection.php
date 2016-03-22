@@ -35,6 +35,10 @@ class Inspection extends Model {
         return $this->belongsTo('App\Models\InspectionOutcome');
     }
 
+    /**
+     * @param $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function getInspection($id) {
         $inspection = Inspection::where('workorder_id', $id)->get();
         return response()->json(compact('inspection'));
