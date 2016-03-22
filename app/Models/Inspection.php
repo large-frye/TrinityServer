@@ -27,6 +27,9 @@ class Inspection extends Model {
     public $harness_charges = [9];
     public $tarp_charges = [10, 11, 12, 13, 14, 15, 16, 17, 18];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function workorder() {
         return $this->belongsTo('App\Models\Workorder', 'id', 'workorder_id');
     }
