@@ -40,6 +40,9 @@ class Inspection extends Model {
         return response()->json(compact('inspection'));
     }
 
+    /**
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function inspectionOutcomes() {
         $outcomes = DB::table('inspection_outcomes')->select('*')->get();
         $harnessCharges = DB::table('billing_options')->select('amount')->where('billing_type', $this->outcome_charges)->get();
