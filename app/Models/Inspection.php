@@ -31,6 +31,9 @@ class Inspection extends Model {
         return $this->belongsTo('App\Models\Workorder', 'id', 'workorder_id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function inspectionOutcome() {
         return $this->belongsTo('App\Models\InspectionOutcome');
     }
