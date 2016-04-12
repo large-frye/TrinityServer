@@ -75,6 +75,8 @@ class Counts extends Model {
         $items['expert'][0]->length = count($itemsArr);
 
         return $items;
+
+        //return response()->json(compact('items'));
     }
 
     /**

@@ -18,10 +18,16 @@ class Inspector extends BaseController {
     public function __construct()
     {
         $this->workorderModel = new Workorder();
+        $this->reportModel = new Reports();
     }
 
     public function getWorkorders($id)
     {
         return $this->workorderModel->getInspectorWorkorders($id);
+    }
+
+    public function getReports($status, $id)
+    {
+        return $this->reportModel->getInspectorReports($id, $status);
     }
 }

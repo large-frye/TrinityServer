@@ -65,6 +65,33 @@ class Reports extends BaseController {
         }
     }
 
+    public function getInspectorReports($id, $status) {
+        $reports = [];
+        $fields = [];
+
+        try {
+            switch ($status) {
+                case 'all':
+                    $reports = $this->getBaseQuery()
+                        ->where('inspector_id', $id)
+                        ->get();
+
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+
+                    break;
+            }
+
+            $name = array(ucfirst(str_replace('-', ' ', $status)));
+            return response()->json(compact('reports', 'fields', 'name'));
+
+        } catch (QueryException $e) {
+            return response()->json($e->getMessage(), 500);
+        }
+    }
+
     /**
      * @param $status
      * @return \Symfony\Component\HttpFoundation\Response
