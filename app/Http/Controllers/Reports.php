@@ -76,12 +76,48 @@ class Reports extends BaseController {
                         ->where('inspector_id', $id)
                         ->get();
 
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                    $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
 
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
 
                     break;
+                case 'new-pickups':
+                    $reports = $this->getBaseQuery()
+                        ->where('work_order.status_id', '=', Reports::NEW_PICKUP)
+                        ->where('inspector_id', $id)
+                        ->get();
+
+                    $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+
+                    break;
+
+                case 'insp-input-required':
+                    $reports = $this->getBaseQuery()
+                        ->where('work_order.status_id', '=', Reports::INSPECTOR_ATTENTION_REQUIRED)
+                        ->where('inspector_id', $id)
+                        ->get();
+
+                    $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+
+                    break;
+
+                case 'today':
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59'), date('Y-m-d 00:00:00')])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
             }
 
             $name = array(ucfirst(str_replace('-', ' ', $status)));
