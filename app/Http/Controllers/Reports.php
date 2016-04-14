@@ -110,13 +110,120 @@ class Reports extends BaseController {
 
                 case 'today':
                     $reports = $this->getBaseQuery()
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59'), date('Y-m-d 00:00:00')])
+                        ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59')])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
+
+                case 'tomorrow':
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('1 day')),
+                            date('Y-m-d 00:00:00', strtotime('1 day'))])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+                case 'yesterday':
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00', strtotime('-1 day')),
+                            date('Y-m-d 23:59:59', strtotime('-1 day'))])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+                case 'this-week':
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('last sunday')),
+                            date('Y-m-d 00:00:00', strtotime('next sunday'))])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+                case 'last-week':
+                    $lastWeek = date('Y-m-d 23:59:59', strtotime('last sunday'));
+                    $date = new \DateTime($lastWeek);
+                    $date->modify('-7 day');
+
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
+                            $lastWeek])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+                case 'next-week':
+                    $nextWeek = date('Y-m-d 23:59:59', strtotime('next sunday'));
+                    $date = new \DateTime($nextWeek);
+                    $date->modify('+7 day');
+
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
+                            $nextWeek])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+                case 'this-month':
+                    $firstDay = new \DateTime('first day of this month');
+                    $lastDay = new \DateTime('last day of this month');
+
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
+                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+                case 'last-month':
+                    $firstDay = new \DateTime('first day of last month');
+                    $lastDay = new \DateTime('last day of last month');
+
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
+                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+                case 'next-month':
+                    $firstDay = new \DateTime('first day of next month');
+                    $lastDay = new \DateTime('last day of next month');
+
+                    $reports = $this->getBaseQuery()
+                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
+                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->where('inspector_id', $id)
+                        ->get();
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    break;
+
+
 
             }
 
