@@ -70,7 +70,7 @@ $app->group(['prefix' => 'inspector', 'middleware' => array('jwt.auth', 'authori
 
 
 # Shared
-$app->group(['prefix' => 'shared', 'middleware' => array('authorization.inspector')], function($app) {
+$app->group(['prefix' => 'shared', 'middleware' => array('jwt.auth')], function($app) {
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
     $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
 });
