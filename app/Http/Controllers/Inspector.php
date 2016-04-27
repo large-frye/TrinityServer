@@ -19,6 +19,7 @@ class Inspector extends BaseController {
     {
         $this->workorderModel = new Workorder();
         $this->reportModel = new Reports();
+        $this->inspectionModel = new Inspection();
     }
 
     public function getWorkorders($id)
@@ -29,5 +30,9 @@ class Inspector extends BaseController {
     public function getReports($status, $id)
     {
         return $this->reportModel->getInspectorReports($id, $status);
+    }
+    
+    public function getInspection($id, $userId) {
+        return $this->inspectionModel->getInspectorInspection($id, $userId);
     }
 }

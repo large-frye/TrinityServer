@@ -186,6 +186,19 @@ class Workorder extends Model {
             return response()->json(compact('e'), 500);
         }
     }
+    
+    public function getInspectorWorkorder($id, $userId) {
+        try {
+            $match = [
+                'id' => $id,
+                'inspector_id' => $userId
+            ];
+            $order = Workorder::where($match)->get();
+            return response()->json(compact('order'));
+        } catch (QueryException $e) {
+            return response()->json(compact('e'), 500);
+        }
+    }
 
     public function getInspectorWorkorders($id)
     {

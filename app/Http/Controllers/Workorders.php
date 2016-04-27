@@ -73,6 +73,10 @@ class Workorders extends BaseController
         return $this->_workorder->getWorkorder($id);
     }
 
+    public function getByInspector($id, $userId) {
+        return $this->_workorder->getInspectorWorkorder($id, $userId);
+    }
+
     public function all() {
         return $this->_workorder->getAllWorkOrders();
     }

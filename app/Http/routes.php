@@ -67,5 +67,6 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 $app->group(['prefix' => 'inspector', 'middleware' => array('jwt.auth', 'authorization.inspector')], function($app) {
     $app->get('/workorders/{id}', 'App\Http\Controllers\Inspector@getWorkorders');
     $app->get('/reports/{status}/{id}', 'App\Http\Controllers\Inspector@getReports');
+    $app->get('/inspections/{id}/{userId}', 'App\Http\Controllers\Workorders@getByInspector');
 });
 
