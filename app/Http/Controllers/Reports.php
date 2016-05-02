@@ -88,8 +88,8 @@ class Reports extends BaseController {
                         ->where('inspector_id', $id)
                         ->get();
 
-                    $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
-                        'Inspector', 'Date of Inspection', 'Date Created');
+                    $stringFields = array('Inspector', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Date of Inspection',
+                        'Inspection Outcome', 'Date Created');
 
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
 
@@ -449,10 +449,12 @@ class Reports extends BaseController {
             ->select('work_order.id as customer_id',
                 DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
                 'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
-                'work_order.created_at as date_created')
+                'work_order.created_at as date_created', 'meta.value as inspection_outcome')
             ->join('user as u', 'work_order.adjuster_id', '=', 'u.id')
             ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
             ->join('user_profiles as p', 'u.id', '=', 'p.user_id')
-            ->join('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
+            ->join('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id')
+            ->leftJoin('inspection_meta as meta', 'meta.workorder_id', '=', 'work_order.id')
+            ->where('meta.key', '=', 'outcome_type');
     }
 }
