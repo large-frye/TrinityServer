@@ -449,7 +449,8 @@ class Reports extends BaseController {
             ->select('work_order.id as customer_id',
                 DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
                 'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
-                'work_order.created_at as date_created', 'meta.value as inspection_outcome')
+                'work_order.created_at as date_created', 'meta.value as inspection_outcome',
+                'u2.name as inspector')
             ->join('user as u', 'work_order.adjuster_id', '=', 'u.id')
             ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
             ->join('user_profiles as p', 'u.id', '=', 'p.user_id')
