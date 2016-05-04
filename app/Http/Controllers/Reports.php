@@ -519,11 +519,10 @@ class Reports extends BaseController {
                     break;
 
                 case 'this-year':
-                    $startYear = new \DateTime('first day of this year');
-                    $endYear = new \DateTime('last day of this year');
-                    $reports = $this->getBaseQuery()
-                        ->whereBetween('date_of_inspection', [$startYear->format('Y-m-d 00:00:00'),
-                            $endYear->format('Y-m-d 23:59:59')])
+                    $startYear = date('Y-01-01 00:00:00');
+                    $endYear = date('Y-12-31 23:59:59');
+                    $reports = $this->getBaseQuery('outcome_type')
+                        ->whereBetween('date_of_inspection', [$startYear, $endYear])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
@@ -531,11 +530,10 @@ class Reports extends BaseController {
                     break;
                 
                 case 'last-year':
-                    $startYear = new \DateTime('first day of last year');
-                    $endYear = new \DateTime('last day of last year');
+                    $startYear = date('Y-01-01 00:00:00', strtotime('-1 year'));
+                    $endYear = date('Y-12-31 23:59:59', strtotime('-1 year'));
                     $reports = $this->getBaseQuery()
-                        ->whereBetween('date_of_inspection', [$startYear->format('Y-m-d 00:00:00'),
-                            $endYear->format('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$startYear, $endYear])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
@@ -560,19 +558,36 @@ class Reports extends BaseController {
         return $fields;
     }
 
-    private function getBaseQuery() {
-        return DB::table('work_order')
-            ->select('work_order.id as customer_id',
-                DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
-                'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
-                DB::raw('DATE_FORMAT(date_of_inspection, \'%h:%i:%s\') as time_of_inspection'),
-                'work_order.created_at as date_created', 'meta.value as inspection_outcome', 'work_order.city',
-                'u2.name as inspector')
-            ->join('user as u', 'work_order.adjuster_id', '=', 'u.id')
+
+    /**
+     * @param bool $metaKey
+     * @return mixed
+     */
+    private function getBaseQuery($metaKey = false) {
+        $select = array('work_order.id as customer_id',
+            DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
+            'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
+            DB::raw('DATE_FORMAT(date_of_inspection, \'%h:%i:%s\') as time_of_inspection'),
+            'work_order.created_at as date_created', 'work_order.city',
+            'u2.name as inspector');
+
+        $query = DB::table('work_order');
+
+        if ($metaKey) {
+            array_push($select, 'meta.value as inspection_outcome');
+        }
+
+        $query->select($select)
+            ->leftJoin('user as u', 'work_order.adjuster_id', '=', 'u.id')
             ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
-            ->join('user_profiles as p', 'u.id', '=', 'p.user_id')
-            ->join('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id')
-            ->leftJoin('inspection_meta as meta', 'meta.workorder_id', '=', 'work_order.id')
-            ->where('meta.key', '=', 'outcome_type');
+            ->leftJoin('user_profiles as p', 'u.id', '=', 'p.user_id')
+            ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
+
+        if ($metaKey) {
+            $query->leftJoin('inspection_meta as meta', 'meta.workorder_id', '=', 'work_order.id')
+                ->where('meta.key', '=', $metaKey);
+        }
+
+        return $query;
     }
 }
