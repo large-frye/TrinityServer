@@ -550,9 +550,6 @@ class Reports extends BaseController {
         } catch (QueryException $e) {
             return response()->json(compact('e'));
         }
-
-
-
     }
 
     private function createAssociateFieldArray($stringFields, $fields) {
