@@ -202,45 +202,97 @@ class Workorder extends Model {
 
     public function getInspectorWorkorders($id)
     {
+        $orders = [];
+        $today = new Time(date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59'));
+        $tomorrow = new Time(date('Y-m-d 00:00:00', strtotime('1 day')), date('Y-m-d 23:59:59', strtotime('1 day')));
+        $yesterday = new Time(date('Y-m-d 00:00:00', strtotime('-1 day')), date('Y-m-d 23:59:59', strtotime('-1 day')));
+
         try {
 
-            // dates
-            $counts = new Counts();
-            $dates = $counts->get_dates();
-
-            $today = Workorder::where('inspector_id', '=', $id)->get();
-//                ->whereBetween('date_of_inspection', [$dates->today->format('Y-m-d 00:00:00'), $dates->today->format('Y-m-d 23:59:59')])
-//                ->get();
-//            $yesterday = Workorder::where('inspector_id', '=', $id)
-//                ->whereBetween('date_of_inspection', [$dates->today->format('Y-m-d 00:00:00'), $dates->today->format('Y-m-d 23:59:59')])
-//                ->get();
-
-            $results = $today;
-
-            $orders = [];
+            $query = $this->getBaseQuery('inspection_outcome')
+                ->where('inspector_id', $id)
+                ->where(function ($query) use (&$today, &$tomorrow, &$yesterday) {
+                    $query->whereIn('status_id', array(Reports::NEW_PICKUP, Reports::INSPECTOR_ATTENTION_REQUIRED))
+                        // today
+                        ->orWhere(function($query) use (&$today) {
+                            $query->whereBetween('date_of_inspection', [$today->getStart(), $today->getEnd()]);
+                        })
+                        // tomorrow
+                        ->orWhere(function($query) use (&$tomorrow) {
+                            $query->whereBetween('date_of_inspection', [$tomorrow->getStart(), $tomorrow->getEnd()]);
+                        })
+                        // yesterday
+                        ->orWhere(function($query) use (&$yesterday) {
+                            $query->whereBetween('date_of_inspection', [$yesterday->getStart(), $yesterday->getEnd()]);
+                        });
+                })
+                ->groupBy('work_order.id');
+            $results = $query->get();
 
             foreach ($results as $key => $order) {
-                if ($key == 'date_of_inspection') {
-                    // $order->date_of_inspection = new \DateTime($order[$key]);
-                }
-                $order->adjuster;
-                $order->adjuster->profile;
-
-
                 if (in_array($order->status_id, array(Reports::NEW_PICKUP, Reports::INSPECTOR_ATTENTION_REQUIRED))) {
                     $status = $order->status_id == Reports::NEW_PICKUP ? 'new_pickups' : 'inspector_attention_required';
                     if (!isset($orders[$status])) {
                         $orders[$status] = array($order);
-
                     } else {
                         array_push($orders[$status], $order);
+                    }
+                } else if ($order->date_of_inspection >= $today->getStart() && $order->date_of_inspection <= $today->getEnd()) {
+                    if (!isset($orders['today'])) {
+                        $orders['today'] = array($order);
+                    }
+                    else {
+                        array_push($orders['today'], $order);
+                    }
+                } else if ($order->date_of_inspection >= $tomorrow->getStart() && $order->date_of_inspection <= $tomorrow->getEnd()) {
+                    if (!isset($orders['tomorrow'])) {
+                        $orders['tomorrow'] = array($order);
+                    }
+                    else {
+                        array_push($orders['tomorrow'], $order);
+                    }
+                } else if ($order->date_of_inspection >= $yesterday->getStart() && $order->date_of_inspection <= $yesterday->getEnd()) {
+                    if (!isset($orders['yesterday'])) {
+                        $orders['yesterday'] = array($order);
+                    }
+                    else {
+                        array_push($orders['yesterday'], $order);
                     }
                 }
             }
 
             return response()->json(compact('orders'));
         } catch (ModelNotFoundException $e) {
-            return response()->json(compact('e'), 500);
+            return response()->json(compact('orders'), 500);
         }
+    }
+
+    private function getBaseQuery($metaKey = false)
+    {
+        $select = array('work_order.id as customer_id',
+            DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
+            'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
+            DB::raw('DATE_FORMAT(date_of_inspection, \'%h:%i:%s\') as time_of_inspection'),
+            'work_order.created_at as date_created', 'work_order.city', 'work_order.status_id', 'work_order.zip_code',
+            'u2.name as inspector');
+
+        $query = DB::table('work_order');
+
+        if ($metaKey) {
+            array_push($select, 'meta.value as inspection_outcome');
+        }
+
+        $query->select($select)
+            ->leftJoin('user as u', 'work_order.adjuster_id', '=', 'u.id')
+            ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
+            ->leftJoin('user_profiles as p', 'u.id', '=', 'p.user_id')
+            ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
+
+        if ($metaKey) {
+            $query->leftJoin('inspection_meta as meta', 'meta.workorder_id', '=', 'work_order.id');
+                // ->where('meta.key', '=', $metaKey);
+        }
+
+        return $query;
     }
  }
