@@ -106,7 +106,6 @@ class Workorder extends Model {
 
             // Transpose our $workorder object from $data
             $workorder = new Workorder();
-            print_r($data);
             foreach ($data as $key => $value) {
                 if ($key != 'query_string') {
                     if ($key == 'adjuster') {
