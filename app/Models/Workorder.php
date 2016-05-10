@@ -56,7 +56,7 @@ class Workorder extends Model {
 
         try {
             // See if client property has an id field.
-            if (isset($data->adjsuter)) {
+            if (isset($data->adjuster)) {
                 $adjuster = (object) $data->adjuster;
                 if (isset($adjuster->id)) {
                     $adjusterId = $adjuster->id;
@@ -106,6 +106,7 @@ class Workorder extends Model {
 
             // Transpose our $workorder object from $data
             $workorder = new Workorder();
+            print_r($data);
             foreach ($data as $key => $value) {
                 if ($key != 'query_string') {
                     if ($key == 'adjuster') {
