@@ -56,49 +56,52 @@ class Workorder extends Model {
 
         try {
             // See if client property has an id field.
-            $adjuster = (object) $data->adjuster;
-            if (isset($adjuster->id)) {
-                $adjusterId = $adjuster->id;
-                DB::table('user_profiles')->where('user_id', $adjuster->id)->update($adjuster->profile);
-            } else {
-                // Create adjuster
-                try {
-                    $user_adjuster = new \App\User();
-                    $user_adjuster->name = $adjuster->profile['first_name'] . ' ' . $adjuster->profile['last_name'];
-                    $user_adjuster->email = $adjuster->email;
-                    $user_adjuster->password = password_hash('123456', PASSWORD_BCRYPT);
-                    $user = $user_adjuster->save();
+            if (isset($data->adjsuter)) {
+                $adjuster = (object) $data->adjuster;
+                if (isset($adjuster->id)) {
+                    $adjusterId = $adjuster->id;
+                    DB::table('user_profiles')->where('user_id', $adjuster->id)->update($adjuster->profile);
+                } else {
+                    // Create adjuster
+                    try {
+                        $user_adjuster = new \App\User();
+                        $user_adjuster->name = $adjuster->profile['first_name'] . ' ' . $adjuster->profile['last_name'];
+                        $user_adjuster->email = $adjuster->email;
+                        $user_adjuster->password = password_hash('123456', PASSWORD_BCRYPT);
+                        $user = $user_adjuster->save();
 
-                    if ($user) {
-                        $adjusterId = $user_adjuster->id;
-                        $user_adjuster_profile = new Profile();
-                        foreach ($adjuster->profile as $key => $value) {
-                            $user_adjuster_profile[$key] = $value;
+                        if ($user) {
+                            $adjusterId = $user_adjuster->id;
+                            $user_adjuster_profile = new Profile();
+                            foreach ($adjuster->profile as $key => $value) {
+                                $user_adjuster_profile[$key] = $value;
+                            }
+
+                            $user_adjuster_profile->user_id = $user_adjuster->id;
+
+                            // Add information to profile
+                            try {
+                                $user_adjuster->profile()->save($user_adjuster_profile);
+                            } catch (ErrorException $e) {
+                                return response()->json(compact('e'));
+                            }
+
+                            // Lastly, add the appropriate role_id
+                            try {
+                                $role_user = new RolesUser();
+                                $role_user->role_id = 4;
+                                $role_user->user_id = $user_adjuster->id;
+                                $role_user->save();
+                            } catch (QueryException $e) {
+                                return response()->json(compact('e'));
+                            }
+
                         }
-
-                        $user_adjuster_profile->user_id = $user_adjuster->id;
-
-                        // Add information to profile
-                        try {
-                            $user_adjuster->profile()->save($user_adjuster_profile);
-                        } catch (ErrorException $e) {
-                            return response()->json(compact('e'));
-                        }
-
-                        // Lastly, add the appropriate role_id
-                        try {
-                            $role_user = new RolesUser();
-                            $role_user->role_id = 4;
-                            $role_user->user_id = $user_adjuster->id;
-                            $role_user->save();
-                        } catch (QueryException $e) {
-                            return response()->json(compact('e'));
-                        }
-
+                    } catch (QueryException $e) {
+                        return response()->json(compact('e'));
                     }
-                } catch (QueryException $e) {
-                    return response()->json(compact('e'));
                 }
+
             }
 
             // Transpose our $workorder object from $data
