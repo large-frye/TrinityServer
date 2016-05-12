@@ -58,6 +58,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # User
     $app->post('/users/create', 'App\Http\Controllers\Account@create_user');
+    $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
 
 });
 
@@ -74,4 +75,5 @@ $app->group(['prefix' => 'inspector', 'middleware' => array('jwt.auth', 'authori
 $app->group(['prefix' => 'shared', 'middleware' => array('jwt.auth')], function($app) {
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
     $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
+    $app->get('/invoice/{id}', 'App\Http\Controllers\Invoice@getInvoice');
 });
