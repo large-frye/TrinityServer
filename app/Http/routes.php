@@ -75,5 +75,7 @@ $app->group(['prefix' => 'inspector', 'middleware' => array('jwt.auth', 'authori
 $app->group(['prefix' => 'shared', 'middleware' => array('jwt.auth')], function($app) {
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
     $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
-    $app->get('/invoice/{id}', 'App\Http\Controllers\Invoice@getInvoice');
+    $app->get('/invoice/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
+    $app->get('/invoice/{start}/{end}', 'App\Http\Controllers\Invoice@getInvoicesByRange');
+    $app->get('/invoice/weeks', 'App\Http\Controllers\Invoice@getInvoiceWeeks');
 });

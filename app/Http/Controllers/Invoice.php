@@ -24,6 +24,21 @@ class Invoice extends BaseController {
      * @param $id
      */
     public function getInvoice($id) {
-        return $this->invoiceModel->getInvoice($id);
+        return $this->invoiceModel->getSimpleWorkorder($id);
+    }
+
+    /**
+     * @return array
+     */
+    public function getInvoiceWeeks() {
+        return $this->invoiceModel->getWorkweeks();
+    }
+
+    public function getInvoicesByRange($start, $end) {
+        return $this->invoiceModel->getInspectionsByRange($start, $end);
+    }
+
+    public function getInvoicesByInspector($start, $end, $id) {
+        return $this->invoiceModel->getInspectionsByInspector($start, $end, $id);
     }
 }
