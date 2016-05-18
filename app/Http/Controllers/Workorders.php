@@ -45,8 +45,15 @@ class Workorders extends BaseController
         return response()->json($this->workorder->findWorkorderByAttribute($attr, $value));
     }
 
-    public function getCounts(Request $request) {
-        return $this->counts->queryCounts();
+    /**
+     * @return mixed
+     */
+    public function getCounts() {
+        $basic = $this->counts->findCounts(0);
+        $expert = $this->counts->findCounts(1);
+        $ladderAssist = $this->counts->findCounts(5);
+
+        return response()->json(compact('basic', 'expert', 'ladderAssist'), 200);
     }
 
     public function getWorkordersByTime($time, $type) {
