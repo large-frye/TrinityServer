@@ -240,7 +240,7 @@ class Reports extends BaseController {
      * @param $status
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function byStatus($status, $inspectionType = false) {
+    public function byStatus($status, $inspectionType) {
 
         $reports = [];
         $fields = [];
@@ -591,7 +591,7 @@ class Reports extends BaseController {
             ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
 
         // Delimit by inspection type
-        if ($inspectionType) {
+        if ($inspectionType && $inspectionType != 'all') {
             $inspectionType = $this->getInspectionType($inspectionType);
             $query->where('work_order.inspection_type', $inspectionType);
         }

@@ -39,7 +39,6 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # Reports
     $app->get('/reports/get', 'App\Http\Controllers\Reports@get');
-    $app->get('/reports/by-status/{status}', 'App\Http\Controllers\Reports@byStatus');
     $app->get('/reports/by-status/{status}/{type}', 'App\Http\Controllers\Reports@byStatus');
 
     # Inspections
