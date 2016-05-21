@@ -51,7 +51,7 @@ class Reports extends BaseController {
         $fields = [];
 
         try {
-            $reports = $this->getBaseQuery()
+            $reports = $this->getBaseQuery(false, false)
                 ->get();
             $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                 'Inspector', 'Date of Inspection', 'Date Created');
@@ -65,14 +65,14 @@ class Reports extends BaseController {
         }
     }
 
-    public function getInspectorReports($id, $status) {
+    public function getInspectorReports($id, $status, $inspectionType = false) {
         $reports = [];
         $fields = [];
 
         try {
             switch ($status) {
                 case 'all':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('inspector_id', $id)
                         ->get();
 
@@ -83,7 +83,7 @@ class Reports extends BaseController {
 
                     break;
                 case 'new-pickups':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('work_order.status_id', '=', Reports::NEW_PICKUP)
                         ->where('inspector_id', $id)
                         ->get();
@@ -96,7 +96,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'insp-input-required':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('work_order.status_id', '=', Reports::INSPECTOR_ATTENTION_REQUIRED)
                         ->where('inspector_id', $id)
                         ->get();
@@ -109,7 +109,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'today':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59')])
                         ->where('inspector_id', $id)
                         ->get();
@@ -119,7 +119,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'tomorrow':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('1 day')),
                             date('Y-m-d 00:00:00', strtotime('1 day'))])
                         ->where('inspector_id', $id)
@@ -130,7 +130,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'yesterday':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00', strtotime('-1 day')),
                             date('Y-m-d 23:59:59', strtotime('-1 day'))])
                         ->where('inspector_id', $id)
@@ -141,7 +141,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'this-week':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('last sunday')),
                             date('Y-m-d 00:00:00', strtotime('next sunday'))])
                         ->where('inspector_id', $id)
@@ -156,7 +156,7 @@ class Reports extends BaseController {
                     $date = new \DateTime($lastWeek);
                     $date->modify('-7 day');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
                             $lastWeek])
                         ->where('inspector_id', $id)
@@ -171,7 +171,7 @@ class Reports extends BaseController {
                     $date = new \DateTime($nextWeek);
                     $date->modify('+7 day');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
                             $nextWeek])
                         ->where('inspector_id', $id)
@@ -185,7 +185,7 @@ class Reports extends BaseController {
                     $firstDay = new \DateTime('first day of this month');
                     $lastDay = new \DateTime('last day of this month');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
                             $lastDay->format('Y-m-d 23:59:59')])
                         ->where('inspector_id', $id)
@@ -199,7 +199,7 @@ class Reports extends BaseController {
                     $firstDay = new \DateTime('first day of last month');
                     $lastDay = new \DateTime('last day of last month');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
                             $lastDay->format('Y-m-d 23:59:59')])
                         ->where('inspector_id', $id)
@@ -214,7 +214,7 @@ class Reports extends BaseController {
                     $firstDay = new \DateTime('first day of next month');
                     $lastDay = new \DateTime('last day of next month');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
                             $lastDay->format('Y-m-d 23:59:59')])
                         ->where('inspector_id', $id)
@@ -240,7 +240,7 @@ class Reports extends BaseController {
      * @param $status
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function byStatus($status) {
+    public function byStatus($status, $inspectionType = false) {
 
         $reports = [];
         $fields = [];
@@ -250,7 +250,7 @@ class Reports extends BaseController {
             switch ($status) {
                 case 'open':
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereNotIn('work_order.status_id', [Reports::CLOSED, Reports::CLOSED_CANCELLED])
                         ->get();
 
@@ -262,7 +262,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'inspector-attention-required':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('work_order.status_id', '=', Reports::INSPECTOR_ATTENTION_REQUIRED)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
@@ -271,7 +271,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'office-attention-required':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('work_order.status_id', '=', Reports::OFFICE_ATTENTION_REQUIRED)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
@@ -280,7 +280,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'new-pickup':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('work_order.status_id', '=', Reports::NEW_PICKUP)
                         ->get();
                     $stringFields = array('Customer ID', 'Inspector', 'Insured', 'State', 'Adjuster', 'Insurance Company',
@@ -289,7 +289,7 @@ class Reports extends BaseController {
                     break;
                 case 'new':
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::NEW_INSPECTION)
                         ->get();
 
@@ -300,7 +300,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'process-reschedule':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereIn('status_id', [Reports::IN_PROCESS, Reports::RESCHEDULE])
                         ->get();
 
@@ -312,7 +312,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'on-hold':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::ON_HOLD)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
@@ -320,7 +320,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'scheduled':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::SCHEDULED)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State',
@@ -328,7 +328,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'post-inspection-date':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::SCHEDULED)
                         ->where('date_of_inspection', '<', date('Y-m-d h:i:s'))
                         ->get();
@@ -337,7 +337,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'inspected':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::INSPECTED)
                         ->get();
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspector', 'Inspection Time',
@@ -345,7 +345,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'pre-invoice':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::PRE_INVOICE)
                         ->get();
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspection Outcome', 'Date Invoiced',
@@ -353,7 +353,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'invoiced':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::INVOICED)
                         ->get();
                     $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
@@ -388,7 +388,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'closed':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::CLOSED)
                         ->get();
                     $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
@@ -396,7 +396,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'cancelled':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::CANCELLED)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
@@ -404,7 +404,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'cancelled-closed':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::CLOSED_CANCELLED)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
@@ -412,7 +412,7 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'today':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59')])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
@@ -421,7 +421,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'tomorrow':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('1 day')),
                             date('Y-m-d 00:00:00', strtotime('1 day'))])
                         ->get();
@@ -431,7 +431,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'yesterday':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00', strtotime('-1 day')),
                             date('Y-m-d 23:59:59', strtotime('-1 day'))])
                         ->get();
@@ -441,7 +441,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'this-week':
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('last sunday')),
                             date('Y-m-d 00:00:00', strtotime('next sunday'))])
                         ->get();
@@ -455,7 +455,7 @@ class Reports extends BaseController {
                     $date = new \DateTime($lastWeek);
                     $date->modify('-7 day');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
                             $lastWeek])
                         ->get();
@@ -469,7 +469,7 @@ class Reports extends BaseController {
                     $date = new \DateTime($nextWeek);
                     $date->modify('+7 day');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
                             $nextWeek])
                         ->get();
@@ -482,7 +482,7 @@ class Reports extends BaseController {
                     $firstDay = new \DateTime('first day of this month');
                     $lastDay = new \DateTime('last day of this month');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
                             $lastDay->format('Y-m-d 23:59:59')])
                         ->get();
@@ -495,7 +495,7 @@ class Reports extends BaseController {
                     $firstDay = new \DateTime('first day of last month');
                     $lastDay = new \DateTime('last day of last month');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
                             $lastDay->format('Y-m-d 23:59:59')])
                         ->get();
@@ -509,7 +509,7 @@ class Reports extends BaseController {
                     $firstDay = new \DateTime('first day of next month');
                     $lastDay = new \DateTime('last day of next month');
 
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
                             $lastDay->format('Y-m-d 23:59:59')])
                         ->get();
@@ -521,8 +521,9 @@ class Reports extends BaseController {
                 case 'this-year':
                     $startYear = date('Y-01-01 00:00:00');
                     $endYear = date('Y-12-31 23:59:59');
-                    $reports = $this->getBaseQuery('outcome_type')
+                    $reports = $this->getBaseQuery('outcome_type', $inspectionType)
                         ->whereBetween('date_of_inspection', [$startYear, $endYear])
+                        ->groupBy('work_order.id')
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
@@ -532,7 +533,7 @@ class Reports extends BaseController {
                 case 'last-year':
                     $startYear = date('Y-01-01 00:00:00', strtotime('-1 year'));
                     $endYear = date('Y-12-31 23:59:59', strtotime('-1 year'));
-                    $reports = $this->getBaseQuery()
+                    $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$startYear, $endYear])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
@@ -558,12 +559,23 @@ class Reports extends BaseController {
         return $fields;
     }
 
+    private function getInspectionType($type) {
+        switch (strtolower($type)) {
+            case 'basic':
+                return 0;
+            case 'ladderassist':
+                return 5;
+            case 'expert':
+                return 1;
+        }
+    }
+
 
     /**
      * @param bool $metaKey
      * @return mixed
      */
-    private function getBaseQuery($metaKey = false) {
+    private function getBaseQuery($metaKey = false, $inspectionType) {
         $select = array('work_order.id as customer_id',
             DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
             'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
@@ -572,22 +584,19 @@ class Reports extends BaseController {
             'u2.name as inspector');
 
         $query = DB::table('work_order');
-
-        if ($metaKey) {
-            array_push($select, 'meta.value as inspection_outcome');
-        }
-
         $query->select($select)
             ->leftJoin('user as u', 'work_order.adjuster_id', '=', 'u.id')
             ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
             ->leftJoin('user_profiles as p', 'u.id', '=', 'p.user_id')
             ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
 
-        if ($metaKey) {
-            $query->leftJoin('inspection_meta as meta', 'meta.workorder_id', '=', 'work_order.id')
-                ->where('meta.key', '=', $metaKey);
+        // Delimit by inspection type
+        if ($inspectionType) {
+            $inspectionType = $this->getInspectionType($inspectionType);
+            $query->where('work_order.inspection_type', $inspectionType);
         }
 
         return $query;
     }
+
 }
