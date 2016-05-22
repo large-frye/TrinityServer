@@ -140,6 +140,7 @@ class Inspection extends Model {
 
     public function updateMeta($workorder_id, $key, $value)
     {
+        DB::table('inspection_meta')->where('key', $key)->delete();
         DB::table('inspection_meta')->insert(
             ['workorder_id' => $workorder_id, 'key' => $key, 'value' => $value]
         );

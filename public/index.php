@@ -28,5 +28,6 @@ $app = require __DIR__.'/../bootstrap/app.php';
 // $app->run($app['request']);
 
 ini_set('memory_limit', '2048M');
+date_default_timezone_set('America/New_York');
 
 $app->run();

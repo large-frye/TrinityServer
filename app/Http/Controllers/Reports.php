@@ -451,13 +451,11 @@ class Reports extends BaseController {
                     break;
 
                 case 'last-week':
-                    $lastWeek = date('Y-m-d 23:59:59', strtotime('last sunday'));
-                    $date = new \DateTime($lastWeek);
-                    $date->modify('-7 day');
+                    $lastWeek = date('Y-m-d 00:00:00', strtotime('last sunday'));
+                    $thisWeek = date('Y-m-d 23:59:59', strtotime('this sunday'));
 
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
-                            $lastWeek])
+                        ->whereBetween('date_of_inspection', [$lastWeek, $thisWeek])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
@@ -578,7 +576,8 @@ class Reports extends BaseController {
     private function getBaseQuery($metaKey = false, $inspectionType) {
         $select = array('work_order.id as customer_id',
             DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
-            'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
+            'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type',
+            DB::raw('DATE_FORMAT(date_of_inspection, \'%Y-%m-%d\') as date_of_inspection'),
             DB::raw('DATE_FORMAT(date_of_inspection, \'%h:%i:%s\') as time_of_inspection'),
             'work_order.created_at as date_created', 'work_order.city',
             'u2.name as inspector');

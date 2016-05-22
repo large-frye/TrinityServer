@@ -30,7 +30,7 @@ class Form extends BaseController
     public function __construct()
     {
         $this->inspection = new Inspection();
-        $this->bucket = 'trinity_images';
+        $this->bucket = 'trinity-content';
         $this->acl = new ACL('public-read', 'private');
     }
 
@@ -50,32 +50,40 @@ class Form extends BaseController
      */
     public function uploadForm()
     {
-        $client = S3Client::factory(array('profile' => 'default', 'region' => 'us-east-1', 'version' => '2006-03-01'));
-        $file = $_FILES['file'];
-        $error = $file['error'];
-        $input = Input::all();
-        $workorder_id = $input['workorder_id'];
-        $key = $input['key'];
+        try  {
+            $client = S3Client::factory(array('profile' => 'default', 'region' => 'us-east-1', 'version' => '2006-03-01'));
+            $files = $_FILES;
+            $input = Input::all();
+            $file = $_FILES['file'];
+            $error = $file['error'];
 
-        if ($error) {
-            return response()->json(['error' => 'error uploading file'], 500);
-        }
+            if ($error !== 0) {
+                return response()->json(['error' => 'error uploading file'], 500);
+            }
 
-        try {
-            $client->putObject(array(
-                'ACL' => $this->acl->getPublic(),
-                'Bucket' => $this->bucket,
-                'Key' => $file['name'],
-                'SourceFile' => $file['tmp_name']
-            ));
-            $url = $client->getObjectUrl($this->bucket, $file['name']);
+            $workorder_id = $input['workorder_id'];
+            $key = $input['key'];
+            $path = 'inspections/' . $workorder_id . '/sketch/'. $file['name'];
 
-            // Attach form to inspection_meta
-            $this->inspection->updateMeta($workorder_id, $key, $url);
+            try {
+                $client->putObject(array(
+                    'ACL' => $this->acl->getPublic(),
+                    'Bucket' => $this->bucket,
+                    'Key' => $path,
+                    'SourceFile' => $file['tmp_name']
+                ));
+                $url = $client->getObjectUrl($this->bucket, $file['name']);
+                $url = 'https://s3.amazonaws.com/trinity-content/' . $path;
 
-            return response()->json(compact('url'));
+                // Attach form to inspection_meta
+                $this->inspection->updateMeta($workorder_id, $key, $url);
+
+                return response()->json(compact('url'));
+            } catch (S3Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 200);
         }
     }
 }

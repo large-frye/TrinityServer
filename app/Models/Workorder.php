@@ -35,6 +35,10 @@ class Workorder extends Model {
         return $this->belongsTo('\App\User');
     }
 
+    public function inspector() {
+        return $this->belongsTo('\App\User');
+    }
+
     public function status() {
         return $this->hasOne('\App\Models\WorkorderStatuses', 'status_id');
     }
@@ -52,7 +56,6 @@ class Workorder extends Model {
      */
     public function saveWorkorder() {
         $data = (object) Input::all();
-        $adjusterId = null;
 
         try {
             // See if client property has an id field.
@@ -110,11 +113,14 @@ class Workorder extends Model {
                 if ($key != 'query_string') {
                     if ($key == 'adjuster') {
                         $workorder['adjuster_id'] = $adjusterId;
-                    } else {
+                    } else if ($key !== 'inspector') {
                         $workorder[$key] = $value;
                     }
                 }
             }
+
+            // Set $workorder to be date/time instead of a timestring, divide by 1000 since JS is in milliseconds.
+            $workorder->date_of_inspection = date('Y-m-d H:i:s', $workorder->date_of_inspection / 1000);
 
             if (isset($data->id)) {
                 $workorder->exists = true;
@@ -146,6 +152,8 @@ class Workorder extends Model {
             $order->adjuster;
             $order->adjuster->profile;
             $order->adjuster->rolesUser;
+            $order->inspector;
+            $order->inspector->profile;
 
             // Add our inspection type
             switch ($order->inspection_type) {
