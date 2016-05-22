@@ -152,11 +152,10 @@ class Workorder extends Model {
             $order->adjuster;
             $order->adjuster->profile;
             $order->adjuster->rolesUser;
-            if (isset($order->inspector_id) && $order->inspection_id != null) {
+            if (isset($order->inspector_id) && $order->inspector_id != null) {
                 $order->inspector;
                 $order->inspector->profile;
             }
-
 
             // Add our inspection type
             switch ($order->inspection_type) {
