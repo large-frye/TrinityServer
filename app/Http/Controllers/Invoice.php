@@ -41,4 +41,8 @@ class Invoice extends BaseController {
     public function getInvoicesByInspector($start, $end, $id) {
         return $this->invoiceModel->getInspectionsByInspector($start, $end, $id);
     }
+
+    public function changeInspectorMileLockState($id) {
+        return $this->invoiceModel->changeInspectorMileLockState($id);
+    }
 }

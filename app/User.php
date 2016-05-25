@@ -7,6 +7,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use League\Flysystem\Exception;
+use Symfony\Component\Debug\Exception\FatalErrorException;
 
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract
 {
@@ -89,8 +90,13 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     {
         try {
             $users = Roles::find($type)->users()->get();
+            foreach($users as $user) {
+                $user->profile;
+            }
             return $users;
         } catch (Exception $e) {
+            return response()->json(compact('e'));
+        } catch (FatalErrorException $e) {
             return response()->json(compact('e'));
         }
     }

@@ -11,7 +11,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use App\Models\Time;
+use App\User;
 
 class Invoice extends Model {
 
@@ -32,15 +32,31 @@ class Invoice extends Model {
     public function getInspectionsByRange($start, $end) {
         $time = new Time(date('Y-m-d 00:00:00', strtotime(str_replace('-', '/', $start))),
             date('Y-m-d 23:59:59', strtotime(str_replace('-', '/', $end))));
+        $meta = [];
 
         try {
             $inspections = DB::table('work_order')->select('first_name', 'last_name', 'date_of_inspection',
-                'meta.value as inspection_outcome')
-                ->leftJoin('inspection_meta as meta', 'work_order.id', '=', 'meta.workorder_id')
+                'inspection_outcome', 'id')
                 ->whereBetween('work_order.date_of_inspection', [$time->getStart(), $time->getEnd()])
-                ->groupBy('work_order.id')
                 ->get();
-            return response()->json(compact('inspections'), 200);
+
+            foreach ($inspections as $inspection) {
+                $metaResult = DB::table('inspection_meta')->select('key', 'value', 'workorder_id')->where('workorder_id', $inspection->id)
+                    ->whereIn('key', ['harness_charge', 'tarp_charge', 'misc_charge'])
+                    ->get();
+
+                if (count($metaResult) > 0) {
+                    foreach ($metaResult as $result) {
+                        $meta[$result->workorder_id][] = $result;
+                    }
+                } else {
+                    array_push($meta, $metaResult);
+                }
+
+
+            }
+
+            return response()->json(compact('inspections', 'meta'), 200);
         } catch (QueryException $e) {
             return response()->json(compact('e'), 500);
         }
@@ -49,16 +65,30 @@ class Invoice extends Model {
     public function getInspectionsByInspector($start, $end, $id) {
         $time = new Time(date('Y-m-d 00:00:00', strtotime(str_replace('-', '/', $start))),
             date('Y-m-d 23:59:59', strtotime(str_replace('-', '/', $end))));
+        $meta = [];
 
         try {
             $inspections = DB::table('work_order')->select('first_name', 'last_name', 'date_of_inspection',
-                'meta.value as inspection_outcome')
-                ->leftJoin('inspection_meta as meta', 'work_order.id', '=', 'meta.workorder_id')
+                'inspection_outcome', 'id')
                 ->whereBetween('work_order.date_of_inspection', [$time->getStart(), $time->getEnd()])
                 ->where('inspector_id', $id)
-                ->groupBy('work_order.id')
                 ->get();
-            return response()->json(compact('inspections'), 200);
+
+            foreach ($inspections as $inspection) {
+                $metaResult = DB::table('inspection_meta')->select('key', 'value', 'workorder_id')->where('workorder_id', $inspection->id)
+                    ->whereIn('key', ['harness_charge', 'tarp_charge'])
+                    ->get();
+
+                if (count($metaResult) > 0) {
+                    foreach ($metaResult as $result) {
+                        $meta[$result->workorder_id][] = $result;
+                    }
+                } else {
+                    array_push($meta, $metaResult);
+                }
+            }
+
+            return response()->json(compact('inspections', 'meta'), 200);
         } catch (QueryException $e) {
             return response()->json(compact('e'), 500);
         }
@@ -96,6 +126,28 @@ class Invoice extends Model {
         }
 
         return $weeks;
+    }
+
+    public function changeInspectorMileLockState($userId) {
+        try {
+            $user = User::find($userId);
+            $lockedState = $user->profile->is_miles_locked;
+
+            switch ($lockedState) {
+                case NULL:
+                case 0:
+                    $lockedState = 1;
+                    break;
+                default:
+                    $lockedState = 0;
+                    break;
+            }
+
+            DB::table('user_profiles')->where('user_id', $userId)->update(['is_miles_locked' => $lockedState]);
+            return response()->json(array('lockedState' => intval($lockedState)), 200);
+        } catch (QueryException $e) {
+            return response()->json(compact('e'), 500);
+        }
     }
 
     /**

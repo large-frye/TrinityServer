@@ -60,6 +60,8 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->post('/users/create', 'App\Http\Controllers\Account@create_user');
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
 
+    # Billing
+    $app->get('/billing/lock/{id}', 'App\Http\Controllers\Invoice@changeInspectorMileLockState');
 });
 
 # Inspector accounts

@@ -162,7 +162,7 @@ class Account extends BaseController {
     }
 
     public function getAdjusters($type) {
-        return $this->user->findAdjusters($type);
+        return $this->user->findAdjusters(User::CLIENT);
     }
 
     public function getInspectors() {
