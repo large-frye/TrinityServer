@@ -8,7 +8,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RolesUser;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Http\Exception\HttpResponseException;
 use JWTAuth;
@@ -47,22 +49,35 @@ class Account extends BaseController {
             return response()->json(['error' => 'user exists already'], 500);
         } catch (ModelNotFoundException $e) {
 
-            $user = new \App\User();
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->password = password_hash($request->password, PASSWORD_BCRYPT);
+            try {
+                $user = new \App\User();
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->password = password_hash($request->password, PASSWORD_BCRYPT);
 
-            if ($user->save()) {
-                $data = array('name' => $request->name);
+                if ($user->save()) {
+                    $data = array('name' => 'Andrew');
 
-                Mail::send('createuser', $data, function($msg) use ($request) {
-                    $msg->to([$request->email]);
-                    $msg->subject('New Account on trinity.is');
-                });
+//                Mail::send('createuser', $data, function($msg) use ($request) {
+//                    $msg->to([$request->email]);
+//                    $msg->subject('New Account on trinity.is');
+//                });
 
-                return response()->json(compact('user'));
-            } else {
-                return response()->json(['error' => 'could not save user'], 500);
+                    if (isset($request->userType)) {
+                        $roleUser = new RolesUser();
+                        $roleUser->user_id = $user->id;
+                        $roleUser->role_id = $request->userType;
+                        $roleUser->save();
+                    }
+
+                    return response()->json(compact('user'));
+                } else {
+                    return response()->json(['error' => 'could not save user'], 500);
+                }
+            } catch (QueryException $e) {
+                return response()->json(compact('e'), 500);
+            } catch (\Exception $e) {
+                return response()->json(compact('e'), 500);
             }
         }
     }

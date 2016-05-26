@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use App\User;
+use Illuminate\Support\Facades\Input;
 
 class Invoice extends Model {
 
@@ -147,6 +148,53 @@ class Invoice extends Model {
             return response()->json(array('lockedState' => intval($lockedState)), 200);
         } catch (QueryException $e) {
             return response()->json(compact('e'), 500);
+        }
+    }
+
+    public function checkInspectorLock($userId) {
+        try {
+            $user = User::find($userId);
+            $lockedState = $user->profile->is_miles_locked;
+            return response()->json(array('lockedState' => intval($lockedState)), 200);
+        } catch (QueryException $e) {
+            return response()->json(compact('e'), 500);
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function saveMileage() {
+        $data = (object) Input::all();
+        try {
+            $mileage = new Mileage();
+            foreach ($data as $k => $v) {
+                if (!in_array($k, array('query_string', 'total', 'billable'))) {
+                    $mileage[$k] = $v;
+                }
+            }
+
+            if (isset($mileage->id)) {
+                $mileage->exists = true;
+            }
+
+            $mileage->save();
+
+            return response()->json(compact('mileage'), 200);
+
+        } catch (QueryException $e) {
+            return response()->json(compact('e'), 500);
+        } catch (\Exception $e) {
+            return response()->json(compact('e'), 500);
+        }
+    }
+
+    public function getWeeklyInspectorMileage($id, $week) {
+        try {
+            $mileage = DB::table('mileage')->where('inspector_id', $id)->where('week', $week)->get();
+            return response()->json(compact('mileage'), 200);
+        } catch (QueryException $e) {
+            return response()->json(compact('e'), 200);
         }
     }
 

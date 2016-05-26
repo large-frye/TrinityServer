@@ -77,7 +77,13 @@ $app->group(['prefix' => 'inspector', 'middleware' => array('jwt.auth', 'authori
 $app->group(['prefix' => 'shared', 'middleware' => array('jwt.auth')], function($app) {
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
     $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
-    $app->get('/billing/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
+
+    # Billing
+    $app->get('/billing/mileage/{id}/{week}', 'App\Http\Controllers\Invoice@getWeeklyInspectorMileage');
+    $app->get('/billing/check-lock/{id}', 'App\Http\Controllers\Invoice@checkInspectorLock');
     $app->get('/billing/{start}/{end}', 'App\Http\Controllers\Invoice@getInvoicesByRange');
+    $app->get('/billing/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
+
     $app->get('/billing/weeks', 'App\Http\Controllers\Invoice@getInvoiceWeeks');
+    $app->post('/billing/mileage/save', 'App\Http\Controllers\Invoice@saveMileage');
 });

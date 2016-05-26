@@ -45,4 +45,16 @@ class Invoice extends BaseController {
     public function changeInspectorMileLockState($id) {
         return $this->invoiceModel->changeInspectorMileLockState($id);
     }
+
+    public function getWeeklyInspectorMileage($id, $week) {
+        return $this->invoiceModel->getWeeklyInspectorMileage($id, $week);
+    }
+
+    public function saveMileage() {
+        return $this->invoiceModel->saveMileage();
+    }
+
+    public function checkInspectorLock($id) {
+        return $this->invoiceModel->checkInspectorLock($id);
+    }
 }
