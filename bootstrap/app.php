@@ -110,6 +110,8 @@ $app->middleware([
 |
 */
 
+$app->register(\Barryvdh\DomPDF\ServiceProvider::class);
+
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../app/Http/routes.php';
 });

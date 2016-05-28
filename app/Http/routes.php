@@ -15,6 +15,8 @@ $app->get('/', function () use ($app) {
     return $app->welcome();
 });
 
+$app->get('/generate/{id}', 'Reports@generate');
+
 # Login
 $app->post('auth/login', 'Account@signIn');
 $app->get('auth/logout', 'Account@signOut');
@@ -62,6 +64,9 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # Billing
     $app->get('/billing/lock/{id}', 'App\Http\Controllers\Invoice@changeInspectorMileLockState');
+
+    # Report Generate
+    $app->get('/generate/{id}', 'App\Http\Controllers\Reports@generate');
 });
 
 # Inspector accounts

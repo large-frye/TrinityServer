@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Field;
+use App\Models\Report;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Input;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -18,6 +19,8 @@ use App\Models\Invoice;
 use DB;
 
 class Reports extends BaseController {
+
+    var $reportModel;
 
     const NEW_INSPECTION = 1;
     const CALLED_PH = 2;
@@ -40,10 +43,18 @@ class Reports extends BaseController {
 
     public function __construct() {
         $this->workorder = new Workorder();
+        $this->reportModel = new Report();
         $this->invoice = new Invoice();
         $this->thirtyDays = new \DateTime('- 30 days');
         $this->sixtyDays = new \DateTime('- 60 days');
         $this->ninetyDays = new \DateTime('- 90 days');
+    }
+
+    public function generate($id) {
+        $meta = $this->reportModel->getMetaData($id);
+        $data = $this->reportModel->getInspection($id);
+        $html = view('basic-report', ['meta' => $meta, 'inspection' => $data[0]]);
+        return $this->reportModel->generate($html);
     }
 
     public function get() {

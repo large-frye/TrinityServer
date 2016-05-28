@@ -120,7 +120,6 @@ class Workorder extends Model {
             }
 
             // Set $workorder to be date/time instead of a timestring, divide by 1000 since JS is in milliseconds.
-            $workorder->date_of_inspection = date('Y-m-d H:i:s', $workorder->date_of_inspection / 1000);
 
             if (isset($data->id)) {
                 $workorder->exists = true;
