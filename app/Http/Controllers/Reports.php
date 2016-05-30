@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Count;
 use App\Models\Field;
 use App\Models\Report;
 use Illuminate\Database\QueryException;
@@ -21,6 +22,12 @@ use DB;
 class Reports extends BaseController {
 
     var $reportModel;
+    var $countModel;
+    var $thirtyDays;
+    var $sixtyDays;
+    var $ninetyDays;
+    var $invoice;
+    var $workorder;
 
     const NEW_INSPECTION = 1;
     const CALLED_PH = 2;
@@ -44,6 +51,7 @@ class Reports extends BaseController {
     public function __construct() {
         $this->workorder = new Workorder();
         $this->reportModel = new Report();
+        $this->countModel = new Count();
         $this->invoice = new Invoice();
         $this->thirtyDays = new \DateTime('- 30 days');
         $this->sixtyDays = new \DateTime('- 60 days');
@@ -79,6 +87,7 @@ class Reports extends BaseController {
     public function getInspectorReports($id, $status, $inspectionType = false) {
         $reports = [];
         $fields = [];
+        $header = null;
 
         try {
             switch ($status) {
@@ -91,6 +100,7 @@ class Reports extends BaseController {
                         'Inspector', 'Date of Inspection', 'Date Created');
 
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'All Inspections';
 
                     break;
                 case 'new-pickups':
@@ -103,6 +113,7 @@ class Reports extends BaseController {
                         'Inspection Outcome', 'Date Created');
 
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'New Pickups';
 
                     break;
 
@@ -116,50 +127,52 @@ class Reports extends BaseController {
                         'Time of Inspection', 'Inspection Type', 'Date Created');
 
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspector Input Required Inspections';
 
                     break;
 
                 case 'today':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->today, $this->countModel->tomorrow])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Today\'s Inspections';
                     break;
 
                 case 'tomorrow':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('1 day')),
-                            date('Y-m-d 00:00:00', strtotime('1 day'))])
+                        ->whereBetween('date_of_inspection', [$this->countModel->tomorrow, $this->countModel->nextTwoDays])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Tomorrow\'s Inspections';
                     break;
 
                 case 'yesterday':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00', strtotime('-1 day')),
-                            date('Y-m-d 23:59:59', strtotime('-1 day'))])
+                        ->whereBetween('date_of_inspection', [$this->countModel->yesterday, $this->countModel->today])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Yesterday\'s Inspections';
                     break;
 
                 case 'this-week':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('last sunday')),
-                            date('Y-m-d 00:00:00', strtotime('next sunday'))])
+                        ->whereBetween('date_of_inspection', [$this->countModel->thisWeek, $this->countModel->nextWeek])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'This Week\'s Inspections';
                     break;
 
                 case 'last-week':
@@ -168,13 +181,13 @@ class Reports extends BaseController {
                     $date->modify('-7 day');
 
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
-                            $lastWeek])
+                        ->whereBetween('date_of_inspection', [$this->countModel->lastWeek, $this->countModel->nextWeek])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Last Week\'s Inspections';
                     break;
 
                 case 'next-week':
@@ -183,64 +196,51 @@ class Reports extends BaseController {
                     $date->modify('+7 day');
 
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
-                            $nextWeek])
+                        ->whereBetween('date_of_inspection', [$this->countModel->nextWeek, $this->countModel->twoNextWeek])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Next Week\'s Inspections';
                     break;
 
                 case 'this-month':
-                    $firstDay = new \DateTime('first day of this month');
-                    $lastDay = new \DateTime('last day of this month');
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
-                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->thisMonth, $this->countModel->nextMonth])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'This Month\'s Inspections';
                     break;
 
                 case 'last-month':
-                    $firstDay = new \DateTime('first day of last month');
-                    $lastDay = new \DateTime('last day of last month');
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
-                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->lastMonth, $this->countModel->nextMonth])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
-
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Last Month\'s Inspections';
                     break;
 
                 case 'next-month':
-                    $firstDay = new \DateTime('first day of next month');
-                    $lastDay = new \DateTime('last day of next month');
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
-                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->nextMonth, $this->countModel->lastDayOfNextMonth])
                         ->where('inspector_id', $id)
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Next Month\'s Inspections';
                     break;
-
-
-
             }
 
             $name = array(ucfirst(str_replace('-', ' ', $status)));
-            return response()->json(compact('reports', 'fields', 'name'));
+            return response()->json(compact('reports', 'fields', 'name', 'header'));
 
         } catch (QueryException $e) {
             return response()->json($e->getMessage(), 500);
@@ -255,6 +255,7 @@ class Reports extends BaseController {
 
         $reports = [];
         $fields = [];
+        $header = null;
 
         try {
 
@@ -269,6 +270,7 @@ class Reports extends BaseController {
                         'Inspector', 'Date of Inspection', 'Date Created');
 
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Open Inspections';
 
                     break;
 
@@ -279,6 +281,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Time of Inspection',  'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections Requiring Inspector\'s Attention';
                     break;
 
                 case 'office-attention-required':
@@ -288,18 +291,19 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections Requiring Office Attention';
                     break;
 
-                case 'new-pickup':
+                case 'new-pickups':
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('work_order.status_id', '=', Reports::NEW_PICKUP)
                         ->get();
                     $stringFields = array('Customer ID', 'Inspector', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'New Pickups From Inspectors';
                     break;
                 case 'new':
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::NEW_INSPECTION)
                         ->get();
@@ -307,7 +311,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
-
+                    $header = 'New Inspections';
                     break;
 
                 case 'process-reschedule':
@@ -319,7 +323,7 @@ class Reports extends BaseController {
                         'Date of Inspection', 'Inspection Type', 'Date Created');
 
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
-
+                    $header = 'Inspections That Need To Be Scheduled';
                     break;
 
                 case 'on-hold':
@@ -329,6 +333,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections That Are On Hold';
                     break;
                 case 'scheduled':
                     $reports = $this->getBaseQuery(false, $inspectionType)
@@ -337,6 +342,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State',
                         'Adjuster', 'Date of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Scheduled Inspections';
                     break;
                 case 'post-inspection-date':
                     $reports = $this->getBaseQuery(false, $inspectionType)
@@ -346,6 +352,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspector', 'Inspection Time',
                         'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections That Are Past Their Inspection Date';
                     break;
                 case 'inspected':
                     $reports = $this->getBaseQuery(false, $inspectionType)
@@ -354,6 +361,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspector', 'Inspection Time',
                         'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspected';
                     break;
                 case 'pre-invoice':
                     $reports = $this->getBaseQuery(false, $inspectionType)
@@ -362,6 +370,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspection Outcome', 'Date Invoiced',
                         'Adjuster', 'Insurance Company', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Need one';
                     break;
                 case 'invoiced':
                     $reports = $this->getBaseQuery(false, $inspectionType)
@@ -370,32 +379,38 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
                         'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections That Have Been Invoiced & Are Waiting For Payment';
                     break;
                 case 'invoiced-past-30-days':
                     $reports = DB::table('work_order')->join('invoice', 'work_order.invoice_id', '=', 'invoice.id')
                         ->where('work_order.status_id', '=', Reports::INVOICED)
-                        ->whereBetween('invoice.date', [$this->sixtyDays->format('Y-m-d h:i:s'), $this->thirtyDays->format('Y-m-d h:i:s')])
+                        ->whereBetween('invoice.date', [strtotime($this->sixtyDays->format('Y-m-d h:i:s')),
+                            strtotime($this->thirtyDays->format('Y-m-d h:i:s'))])
                         ->get();
                     $stringFields = array('Customer ID', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
                         'Date of Inspection', 'Date Invoiced', 'Claim #', 'Insured', 'State');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections Waiting For Payment Longer Than 30 Days';
                     break;
                 case 'invoiced-past-60-days':
                     $reports = DB::table('work_order')->join('invoice', 'work_order.invoice_id', '=', 'invoice.id')
                         ->where('work_order.status_id', '=', Reports::INVOICED)
-                        ->whereBetween('invoice.date', [$this->ninetyDays->format('Y-m-d h:i:s'), $this->sixtyDays->format('Y-m-d h:i:s')])
+                        ->whereBetween('invoice.date', [strtotime($this->ninetyDays->format('Y-m-d h:i:s')),
+                            strtotime($this->sixtyDays->format('Y-m-d h:i:s'))])
                         ->get();
                     $stringFields = array('Customer ID', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
                         'Date of Inspection', 'Date Invoiced', 'Claim #', 'Insured', 'State');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections Waiting For Payment Longer Than 60 Days';
                     break;
                 case 'invoiced-past-90-days':
                     $reports = DB::table('work_order')->join('invoice', 'work_order.invoice_id', '=', 'invoice.id')
                         ->where('work_order.status_id', '=', Reports::INVOICED)
-                        ->where('invoice.date', '<', $this->ninetyDays->format('Y-m-d h:i:s'))
+                        ->where('invoice.date', '<', strtotime($this->ninetyDays->format('Y-m-d h:i:s')))
                         ->get();
                     $stringFields = array('Customer ID', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
                         'Date of Inspection', 'Date Invoiced', 'Claim #', 'Insured', 'State');
+                    $header = 'Inspections Waiting For Payment Longer Than 90 Days';
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'closed':
@@ -404,6 +419,7 @@ class Reports extends BaseController {
                         ->get();
                     $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
                         'Date of Inspection', 'Date Invoiced', 'Date Pymt Received', 'Date Created');
+                    $header = 'Closed Inspections';
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'cancelled':
@@ -412,6 +428,7 @@ class Reports extends BaseController {
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date Cancelled', 'Date Created');
+                    $header = 'Cancelled Inspections';
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
                 case 'cancelled-closed':
@@ -421,139 +438,123 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date Cancelled', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Closed Inspections (Cancelled)';
                     break;
                 case 'today':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->today, $this->countModel->tomorrow])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Today\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'tomorrow':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('1 day')),
-                            date('Y-m-d 00:00:00', strtotime('1 day'))])
+                        ->whereBetween('date_of_inspection', [$this->countModel->tomorrow, $this->countModel->nextTwoDays])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Tomorrow\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'yesterday':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 00:00:00', strtotime('-1 day')),
-                            date('Y-m-d 23:59:59', strtotime('-1 day'))])
+                        ->whereBetween('date_of_inspection', [$this->countModel->yesterday, $this->countModel->today])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Yesterday\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'this-week':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [date('Y-m-d 23:59:59', strtotime('last sunday')),
-                            date('Y-m-d 00:00:00', strtotime('next sunday'))])
+                        ->whereBetween('date_of_inspection', [$this->countModel->thisWeek, $this->countModel->nextWeek])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'This Week\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'last-week':
-                    $lastWeek = date('Y-m-d 00:00:00', strtotime('last sunday'));
-                    $thisWeek = date('Y-m-d 23:59:59', strtotime('this sunday'));
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$lastWeek, $thisWeek])
+                        ->whereBetween('date_of_inspection', [$this->countModel->lastWeek, $this->countModel->nextWeek])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Last Week\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'next-week':
-                    $nextWeek = date('Y-m-d 23:59:59', strtotime('next sunday'));
-                    $date = new \DateTime($nextWeek);
-                    $date->modify('+7 day');
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$date->format('Y-m-d h:i:s'),
-                            $nextWeek])
+                        ->whereBetween('date_of_inspection', [$this->countModel->nextWeek, $this->countModel->twoNextWeek])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Next Week\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'this-month':
-                    $firstDay = new \DateTime('first day of this month');
-                    $lastDay = new \DateTime('last day of this month');
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
-                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->thisMonth, $this->countModel->nextMonth])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'This Month\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'last-month':
-                    $firstDay = new \DateTime('first day of last month');
-                    $lastDay = new \DateTime('last day of last month');
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
-                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->lastMonth, $this->countModel->thisMonth])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
-
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Last Month\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'next-month':
-                    $firstDay = new \DateTime('first day of next month');
-                    $lastDay = new \DateTime('last day of next month');
-
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$firstDay->format('Y-m-d 00:00:00'),
-                            $lastDay->format('Y-m-d 23:59:59')])
+                        ->whereBetween('date_of_inspection', [$this->countModel->nextMonth, $this->countModel->lastDayOfNextMonth])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Next Month\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
 
                 case 'this-year':
-                    $startYear = date('Y-01-01 00:00:00');
-                    $endYear = date('Y-12-31 23:59:59');
                     $reports = $this->getBaseQuery('outcome_type', $inspectionType)
-                        ->whereBetween('date_of_inspection', [$startYear, $endYear])
+                        ->whereBetween('date_of_inspection', [$this->countModel->year, $this->countModel->nextYear])
                         ->groupBy('work_order.id')
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'This Year\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
                 
                 case 'last-year':
-                    $startYear = date('Y-01-01 00:00:00', strtotime('-1 year'));
-                    $endYear = date('Y-12-31 23:59:59', strtotime('-1 year'));
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$startYear, $endYear])
+                        ->whereBetween('date_of_inspection', [$this->countModel->lastYear, $this->countModel->year])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Last Year\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
                     break;
                     
             }
 
             $name = array(ucfirst(str_replace('-', ' ', $status)));
-            return response()->json(compact('reports', 'fields', 'name'));
+            return response()->json(compact('reports', 'fields', 'name', 'header'));
 
         } catch (QueryException $e) {
             return response()->json(compact('e'));
@@ -577,6 +578,18 @@ class Reports extends BaseController {
             case 'expert':
                 return 1;
         }
+        return false;
+    }
+
+    private function getInspectionStr($type) {
+        switch (strtolower($type)) {
+            case 'basic':
+            case 'expert':
+                return ucfirst($type);
+            case 'ladderassist':
+                return 'Ladder Assist';
+        }
+        return false;
     }
 
 
@@ -588,8 +601,8 @@ class Reports extends BaseController {
         $select = array('work_order.id as customer_id',
             DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
             'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type',
-            DB::raw('DATE_FORMAT(date_of_inspection, \'%Y-%m-%d\') as date_of_inspection'),
-            DB::raw('DATE_FORMAT(date_of_inspection, \'%h:%i:%s\') as time_of_inspection'),
+            DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%Y-%m-%d") as date_of_inspection'),
+            DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%h:%m:%s") as time_of_inspection'),
             'work_order.created_at as date_created', 'work_order.city',
             'u2.name as inspector');
 
