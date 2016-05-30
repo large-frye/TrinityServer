@@ -40,30 +40,36 @@ class Shared
     }
 
     public function upload($files, $input, $path) {
+        $urls = [];
         try {
             $this->files = $files;
             $this->input = $input;
-            $this->file = $this->files['file'];
-            $this->error = $this->file['error'];
-            $path .= '/' . $this->file['name'];
 
-            if ($this->error !== 0) {
-                return 'Error uploading file(s)';
+            foreach($this->files as $file => $value) {
+                $this->file = $this->files[$file];
+                $this->error = $this->file['error'];
+                $path .= '/' . str_replace('/', '', $this->file['name']);
+
+                if ($this->error !== 0) {
+                    return 'Error uploading file(s)';
+                }
+
+                try {
+                    $this->client->putObject(array(
+                        'ACL' => $this->acl->getPublic(),
+                        'Bucket' => Shared::BUCKET,
+                        'Key' => $path,
+                        'SourceFile' => $this->file['tmp_name']
+                    ));
+
+                    $url = 'https://s3.amazonaws.com/trinity-content/' . $path;
+                    $urls[$file] = $url;
+                } catch (S3Exception $e) {
+                    return response()->json(compact('e'), 200);
+                }
             }
 
-            try {
-                $this->client->putObject(array(
-                    'ACL' => $this->acl->getPublic(),
-                    'Bucket' => Shared::BUCKET,
-                    'Key' => $path,
-                    'SourceFile' => $this->file['tmp_name']
-                ));
-
-                $url = 'https://s3.amazonaws.com/trinity-content/' . $path;
-                return $url;
-            } catch (S3Exception $e) {
-                return response()->json(compact('e'), 200);
-            }
+            return $urls;
         } catch (\Exception $e) {
             return response()->json(compact('e'), 200);
         }

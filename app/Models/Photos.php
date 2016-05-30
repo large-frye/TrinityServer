@@ -27,22 +27,13 @@ class Photos extends Model
     public function getPhotos($id) {
         try {
             $photos = Photos::where('workorder_id', $id)->get();
-            $categorizedPhotos = [];
-
-            // Reorganize photos as in {parentId} => array(photos);
-            foreach ($photos as $photo) {
-                if (!isset($categorizedPhotos[$photo->parent_id])) {
-                    $categorizedPhotos[$photo->parent_id] = array($photo);
-                } else {
-                    array_push($categorizedPhotos[$photo->parent_id], $photo);
-                }
-            }
+            $categorizedPhotos = $this->categorizePhotos($photos);
 
             return response()->json(compact('categorizedPhotos'), 200);
         } catch (ModelNotFoundException $e) {
-            return response()->json(compact('e'), 500);
+            return response()->json(compact('e'), 200);
         } catch (Exception $e) {
-            return response()->json(compact('e'), 500);
+            return response()->json(compact('e'), 200);
         }
     }
 
@@ -52,26 +43,69 @@ class Photos extends Model
     public function uploadPhoto($request, $id) {
         $shared = new Shared();
         $path = 'inspections/' . $id . '/photos';
-        $url = $shared->upload($_FILES, $request, $path);
+        $urls = $shared->upload($_FILES, $request, $path);
 
         try {
-            // Add photo
-            $photo = new Photos(array(
-                'file_name' => $_FILES['file']['name'],
-                'workorder_id' => $id,
-                'label' => null,
-                'parent_id' => null,
-                'sub_parent_id' => null,
-                'file_url' => $url,
-                'id' => null
-            ));
-            $photo->save();
+            foreach ($_FILES as $key => $value) {
+                $file = $_FILES[$key];
+
+                // Add photo
+                $photo = new Photos(array(
+                    'file_name' => $file['name'],
+                    'workorder_id' => $id,
+                    'label' => $file['name'], // By default make it the file_name. The user can override this later.
+                    'parent_id' => null,
+                    'sub_parent_id' => null,
+                    'file_url' => $urls[$key],
+                    'id' => null
+                ));
+                $photo->save();
+            }
+
             $photos = Photos::where('workorder_id', $id)->get();
-            return response()->json(compact('photos'), 200);
+            $categorizedPhotos = $this->categorizePhotos($photos);
+
+            return response()->json(compact('categorizedPhotos'), 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(compact('e'), 200);
         } catch (QueryException $e) {
             return response()->json(compact('e'), 200);
+        } catch (\Exception $e) {
+            return response()->json(compact('e'), 200);
         }
+    }
+
+    /**
+     * Reorganize photos as in {parentId} => array(photos)
+     * @param $photos
+     * @return array
+     */
+    private function categorizePhotos($photos) {
+        $categorizedPhotos = [];
+
+        foreach ($photos as $photo) {
+            if (isset($photo->sub_parent_id)) {
+                if (!isset($categorizedPhotos[$photo->parent_id][$photo->sub_parent_id])) {
+                    $categorizedPhotos[$photo->parent_id][$photo->sub_parent_id] = array($photo);
+                } else {
+                    array_push($categorizedPhotos[$photo->parent_id][$photo->sub_parent_id], $photo);
+                }
+            } else if (isset($photo->parent_id)) {
+                if (!isset($categorizedPhotos[$photo->parent_id]['no_sub_parent'])) {
+                    $categorizedPhotos[$photo->parent_id]['no_sub_parent'] = array($photo);
+                } else {
+                    array_push($categorizedPhotos[$photo->parent_id]['no_sub_parent'], $photo);
+                }
+            } else {
+                if (!isset($categorizedPhotos['no_parent'])) {
+                    $categorizedPhotos['no_parent'] = array($photo);
+                } else {
+                    array_push($categorizedPhotos['no_parent'], $photo);
+                }
+            }
+
+        }
+
+        return $categorizedPhotos;
     }
 }
