@@ -9,6 +9,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inspection;
+use App\Models\InspectionTypes;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -26,5 +28,14 @@ class Inspections extends BaseController {
 
     public function getOutcomes() {
         return $this->inspectionModel->inspectionOutcomes();
+    }
+    
+    public function getInspectionTypes() {
+        try {
+            $types = InspectionTypes::whereIn('id', [0, 1, 5])->get();
+            return response()->json(compact('types'), 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(compact('e'), 500);
+        }
     }
 }

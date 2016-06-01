@@ -45,6 +45,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # Inspections
     $app->get('/inspections/outcomes', 'App\Http\Controllers\Inspections@getOutcomes');
+    $app->get('/inspections/types', 'App\Http\Controllers\Inspections@getInspectionTypes');
     $app->get('/inspections/{id}', 'App\Http\Controllers\Inspections@get');
 
     # Inspection Form
