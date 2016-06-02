@@ -75,6 +75,9 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
     $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
     $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
+
+    # Settings
+    $app->post('/settings/categories/save', 'App\Http\Controllers\Settings@saveCategories');
 });
 
 # Inspector accounts

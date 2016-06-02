@@ -31,8 +31,7 @@ class Invoice extends Model {
      * @return mixed
      */
     public function getInspectionsByRange($start, $end) {
-        $time = new Time(date('Y-m-d 00:00:00', strtotime(str_replace('-', '/', $start))),
-            date('Y-m-d 23:59:59', strtotime(str_replace('-', '/', $end))));
+        $time = new Time(strtotime(str_replace('-', '/', $start)) * 1000, strtotime(str_replace('-', '/', $end)) * 1000);
         $meta = [];
 
         try {
