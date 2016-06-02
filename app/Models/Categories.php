@@ -11,6 +11,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use League\Flysystem\Exception;
 
 class Categories extends Model
 {
@@ -28,18 +29,24 @@ class Categories extends Model
                 $cat->save();
             }
 
-            if (isset($request->subCategories)) {
-                $subCategories = $request->subCategories;
-                foreach ($subCategories as $category1) {
-                    foreach ($category1 as $category) {
-                        $cat = Categories::find($category['id']);
-                        $cat->name = $category['name'];
-                        $cat->save();
+            try {
+                if ($request->has('subCategories')) {
+                    $subCategories = $request->subCategories;
+                    foreach ($subCategories as $category1) {
+                        foreach ($category1 as $category) {
+                            $cat = Categories::find($category['id']);
+                            $cat->name = $category['name'];
+                            $cat->save();
+                        }
                     }
-                }
 
-                return response()->json(compact('categories', 'subCategories'), 200);
+                    return response()->json(compact('categories', 'subCategories'), 200);
+                }
+            } catch (Exception $e) {
+                echo "Doesn't exist";
             }
+
+
 
             return response()->json(compact('categories'), 200);
 
