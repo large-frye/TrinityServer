@@ -60,4 +60,8 @@ class Photo extends BaseController {
             return response()->json(compact('e'), 500);
         }
     }
+
+    public function savePhotos(Request $request) {
+        return $this->photoModel->savePhotos($request);
+    }
 }

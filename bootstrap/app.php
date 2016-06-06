@@ -15,6 +15,9 @@ Dotenv::load(__DIR__.'/../');
 |
 */
 
+class_alias('Illuminate\Support\Facades\Response', 'Response');
+class_alias('Maatwebsite\Excel\Facades\Excel', 'Excel');
+
 $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
 );
@@ -111,6 +114,10 @@ $app->middleware([
 */
 
 $app->register(\Barryvdh\DomPDF\ServiceProvider::class);
+
+// Laravel Excel
+$app->register('Maatwebsite\Excel\ExcelServiceProvider');
+
 
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../app/Http/routes.php';

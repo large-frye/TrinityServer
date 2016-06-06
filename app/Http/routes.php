@@ -16,6 +16,7 @@ $app->get('/', function () use ($app) {
 });
 
 $app->get('/generate/{id}', 'Reports@generate');
+$app->get('/settings/categories/create-excel', 'Settings@createExcel');
 
 # Login
 $app->post('auth/login', 'Account@signIn');
@@ -74,6 +75,8 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->get('/photos/parent-categories', 'App\Http\Controllers\Photo@getParentCategories');
     $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
     $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
+
+    $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
     $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
 
     # Settings

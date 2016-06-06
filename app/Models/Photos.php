@@ -27,7 +27,7 @@ class Photos extends Model
     public function getPhotos($id) {
         try {
             $photos = Photos::where('workorder_id', $id)->get();
-            $categorizedPhotos = $this->categorizePhotos($photos);
+            $categorizedPhotos = $this->categorizePhotosv2($photos);
 
             return response()->json(compact('categorizedPhotos'), 200);
         } catch (ModelNotFoundException $e) {
@@ -63,7 +63,7 @@ class Photos extends Model
             }
 
             $photos = Photos::where('workorder_id', $id)->get();
-            $categorizedPhotos = $this->categorizePhotos($photos);
+            $categorizedPhotos = $this->categorizePhotosv2($photos);
 
             return response()->json(compact('categorizedPhotos'), 200);
         } catch (ModelNotFoundException $e) {
@@ -71,6 +71,22 @@ class Photos extends Model
         } catch (QueryException $e) {
             return response()->json(compact('e'), 200);
         } catch (\Exception $e) {
+            return response()->json(compact('e'), 200);
+        }
+    }
+
+    public function savePhotos($request) {
+
+        try {
+            foreach($request->photos as $photo) {
+                $p = Photos::find($photo['id']);
+                $p->label = $photo['label'];
+                $p->save();
+            }
+
+            return response()->json(array('photos' => $request->photos), 200);
+
+        } catch (ModelNotFoundException $e) {
             return response()->json(compact('e'), 200);
         }
     }
@@ -105,6 +121,26 @@ class Photos extends Model
             }
 
         }
+
+        return $categorizedPhotos;
+    }
+
+    private function categorizePhotosv2($photos) {
+        $categorizedPhotos = [];
+
+        foreach ($photos as $photo) {
+            if (!isset($photo->sub_parent_id) || !isset($photo->parent_id)) {
+
+                if (!isset($categorizedPhotos['notCategorized'])) {
+                    $categorizedPhotos['notCategorized'] = array($photo);
+                } else {
+                    array_push($categorizedPhotos['notCategorized'], $photo);
+                }
+            }
+
+        }
+
+        $categorizedPhotos['all'] = $photos;
 
         return $categorizedPhotos;
     }
