@@ -55,4 +55,21 @@ class Categories extends Model
         }
 
     }
+
+    public function saveCategory($request) {
+        try {
+            $category = new Categories();
+            $category->name = $request->name;
+            if ($request->has('parent_id')) {
+                $category->parent_id = $request->parent_id;
+            }
+            if ($request->has('allowed_to_be_parent')) {
+                $category->allowed_to_be_parent = $request->allowed_to_be_parent;
+            }
+            $category->save();
+            return response()->json(compact('category'), 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(compact('e'), 500);
+        }
+    }
 }

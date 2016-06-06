@@ -78,6 +78,8 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # Settings
     $app->post('/settings/categories/save', 'App\Http\Controllers\Settings@saveCategories');
+    $app->post('/settings/categories/save-category', 'App\Http\Controllers\Settings@saveCategory');
+    $app->get('/settings/categories/parents', 'App\Http\Controllers\Settings@getParents');
 });
 
 # Inspector accounts
