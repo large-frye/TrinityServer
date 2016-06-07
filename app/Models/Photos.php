@@ -81,6 +81,8 @@ class Photos extends Model
             foreach($request->photos as $photo) {
                 $p = Photos::find($photo['id']);
                 $p->label = $photo['label'];
+                $p->parent_id = $photo['parent_id'];
+                $p->sub_parent_id = $photo['sub_parent_id'];
                 $p->save();
             }
 

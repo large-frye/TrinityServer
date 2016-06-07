@@ -83,6 +83,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->post('/settings/categories/save', 'App\Http\Controllers\Settings@saveCategories');
     $app->post('/settings/categories/save-category', 'App\Http\Controllers\Settings@saveCategory');
     $app->get('/settings/categories/parents', 'App\Http\Controllers\Settings@getParents');
+    $app->get('/settings/categories/delete/{id}', 'App\Http\Controllers\Settings@deleteCategory');
 });
 
 # Inspector accounts

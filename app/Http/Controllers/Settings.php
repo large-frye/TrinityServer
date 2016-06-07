@@ -54,6 +54,10 @@ class Settings extends BaseController {
         return $ret;
     }
 
+    public function deleteCategory($id) {
+        return $this->categoryModel->deleteCategory($id);
+    }
+
     public function createExcel() {
         ob_end_clean();
         ob_start();

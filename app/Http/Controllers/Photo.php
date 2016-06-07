@@ -51,6 +51,16 @@ class Photo extends BaseController {
         }
     }
 
+    public function getMicroCategories(Request $request, $id) {
+        try {
+            $categories = Categories::where('sub_parent_id', $id)->get();
+            return response()->json(compact('categories'), 200);
+        }
+        catch (ModelNotFoundException $e) {
+            return response()->json(compact('e'), 500);
+        }
+    }
+
     public function getPhotosByParent($id, $parentId) {
         try {
             $photos = Photos::where('parent_id', $parentId)->where('workorder_id', $id)->get();

@@ -72,4 +72,31 @@ class Categories extends Model
             return response()->json(compact('e'), 500);
         }
     }
+
+    /**
+     * @param $id
+     */
+    public function deleteCategory($id) {
+        try {
+            // Get category info
+            $category = Categories::find($id);
+
+            // Get all children, if there are any
+            $children = Categories::where('parent_id', $id)->get();
+
+            // Delete all the children
+            foreach ($children as $child) {
+                $child->delete();
+            }
+
+            // Delete category
+            $category->delete();
+
+            return response()->json(array('message' => 'category ' . $category->name . ' deleted'), 200);
+
+        } catch (Exception $e) {
+            return response()->json(compact('e'), 500);
+        }
+
+    }
 }
