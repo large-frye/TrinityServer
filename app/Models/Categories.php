@@ -66,6 +66,9 @@ class Categories extends Model
             if ($request->has('allowed_to_be_parent')) {
                 $category->allowed_to_be_parent = $request->allowed_to_be_parent;
             }
+            if ($request->has('display_order')) {
+                $category->display_order = $request->display_order;
+            }
             $category->save();
             return response()->json(compact('category'), 200);
         } catch (ModelNotFoundException $e) {
