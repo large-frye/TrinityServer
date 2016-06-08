@@ -32,6 +32,7 @@ $app->get('auth/logout', 'Account@signOut');
 $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorization.admin')], function($app) {
     # Workorders
     $app->get('/workorders/time/{time}/{type}', 'App\Http\Controllers\Workorders@getWorkordersByTime');
+    $app->get('/workorders/notes/{id}', 'App\Http\Controllers\WorkorderNotes@getNotes');
     $app->get('/workorders/{start}/{end}', 'App\Http\Controllers\Workorders@getWorkorders');
     $app->get('/workorder/all', 'App\Http\Controllers\Workorders@all');
     $app->get('/workorder/statuses', 'App\Http\Controllers\Workorders@getStatuses');
@@ -39,6 +40,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
     $app->post('/workorder/update', 'App\Http\Controllers\Workorders@update');
+    $app->post('/workorders/notes/save/{id}', 'App\Http\Controllers\WorkorderNotes@saveNote');
 
     # Reports
     $app->get('/reports/get', 'App\Http\Controllers\Reports@get');
