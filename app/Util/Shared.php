@@ -5,6 +5,7 @@ namespace App\Util;
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 use App\Models\ACL;
+use Illuminate\Support\Facades\Log;
 use League\Flysystem\Exception;
 
 /**
@@ -32,8 +33,8 @@ class Shared
         $this->createS3Client();
     }
 
-    private function createS3Client() {
-        $this->client = S3Client::factory(array(
+    private static function createS3Client() {
+        return S3Client::factory(array(
             'profile' => Shared::PROFILE,
             'region' => Shared::REGION,
             'version' => Shared::VERSION));
@@ -55,7 +56,7 @@ class Shared
                 }
 
                 try {
-                    $this->client->putObject(array(
+                    Shared::createS3Client()->putObject(array(
                         'ACL' => $this->acl->getPublic(),
                         'Bucket' => Shared::BUCKET,
                         'Key' => $path,
@@ -73,6 +74,16 @@ class Shared
         } catch (\Exception $e) {
             return response()->json(compact('e'), 200);
         }
+    }
 
+    public static function remove($key) {
+        try {
+            Shared::createS3Client()->deleteObject(array(
+                'Bucket' => Shared::BUCKET,
+                'Key' => $key
+            ));
+        } catch (S3Exception $e) {
+            Log::error($e->getMessage());
+        }
     }
 }

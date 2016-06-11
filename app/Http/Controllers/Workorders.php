@@ -18,12 +18,10 @@ use App\Models\Workorder;
 
 class Workorders extends BaseController
 {
-
-    var $workorder, $counts;
+    var $workorder, $counts, $_workorder;
 
     public function __construct()
     {
-        // Workorder model
         $this->workorder = new \App\Models\Workorders();
         $this->_workorder = new Workorder();
         $this->counts = new \App\Models\Counts();
@@ -56,37 +54,25 @@ class Workorders extends BaseController
         return response()->json(compact('basic', 'expert', 'ladderAssist'), 200);
     }
 
-    public function getWorkordersByTime($time, $type) {
-        return $this->workorder->findWorkordersByTime($time, $type);
-    }
+    public function getWorkordersByTime($time, $type) { return $this->workorder->findWorkordersByTime($time, $type); }
 
     /**
      * @param Request $request
      * @param $id
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function update(Request $request) {
-        return $this->workorder->updateWorkorder($request);
-    }
+    public function update(Request $request) { return $this->workorder->updateWorkorder($request); }
 
     /**
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function save() {
-        return $this->_workorder->saveWorkorder();
-    }
+    public function save() { return $this->_workorder->saveWorkorder(); }
 
-    public function get($id) {
-        return $this->_workorder->getWorkorder($id);
-    }
+    public function get($id) { return $this->_workorder->getWorkorder($id); }
 
-    public function getByInspector($id, $userId) {
-        return $this->_workorder->getInspectorWorkorder($id, $userId);
-    }
+    public function getByInspector($id, $userId) { return $this->_workorder->getInspectorWorkorder($id, $userId); }
 
-    public function all() {
-        return $this->_workorder->getAllWorkOrders();
-    }
+    public function all() { return $this->_workorder->getAllWorkOrders(); }
 
     public function getStatuses() {
         $statuses = WorkorderStatuses::all();

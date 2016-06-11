@@ -80,6 +80,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
     $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
+    $app->post('/photos/delete/{workorderId}', 'App\Http\Controllers\Photo@deletePhotos');
 
     # Settings
     $app->post('/settings/categories/save', 'App\Http\Controllers\Settings@saveCategories');

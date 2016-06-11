@@ -74,4 +74,9 @@ class Photo extends BaseController {
     public function savePhotos(Request $request) {
         return $this->photoModel->savePhotos($request);
     }
+
+    public function deletePhotos(Request $request, $workorderId) {
+        $this->photoModel->deletePhotos($request);
+        return $this->photoModel->getPhotos($workorderId);
+    }
 }

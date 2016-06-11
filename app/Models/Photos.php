@@ -14,6 +14,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Input;
 use League\Flysystem\Exception;
 use App\Util\Shared;
+use Illuminate\Support\Facades\Log;
 
 class Photos extends Model
 {
@@ -45,15 +46,20 @@ class Photos extends Model
         $path = 'inspections/' . $id . '/photos';
         $urls = $shared->upload($_FILES, $request, $path);
 
+        // store all the photo names
+        $names = [];
+
         try {
             foreach ($_FILES as $key => $value) {
                 $file = $_FILES[$key];
+
+                array_push($names, $file['name']);
 
                 // Add photo
                 $photo = new Photos(array(
                     'file_name' => $file['name'],
                     'workorder_id' => $id,
-                    'label' => $file['name'], // By default make it the file_name. The user can override this later.
+                    'label' => '',
                     'parent_id' => null,
                     'sub_parent_id' => null,
                     'file_url' => $urls[$key],
@@ -63,7 +69,7 @@ class Photos extends Model
             }
 
             $photos = Photos::where('workorder_id', $id)->get();
-            $categorizedPhotos = $this->categorizePhotosv2($photos);
+            $categorizedPhotos = $this->categorizePhotosv2($photos, $names);
 
             return response()->json(compact('categorizedPhotos'), 200);
         } catch (ModelNotFoundException $e) {
@@ -93,9 +99,26 @@ class Photos extends Model
         }
     }
 
+    public function deletePhotos($request) {
+        try {
+            if ($request->has('photos')) {
+                $photos = $request->photos;
+                foreach ($photos as $photo) {
+                    $photoRef = Photos::find($photo['id']);
+                    $key = 'inspections/' . $photoRef['workorder_id'] . '/photos/' . $photo['file_name'];
+                    Shared::remove($key);
+                    $photoRef->delete();
+                }
+            }
+        } catch (Exception $e) {
+            Log::error($e);
+        }
+    }
+
     /**
      * Reorganize photos as in {parentId} => array(photos)
      * @param $photos
+     * @param $names
      * @return array
      */
     private function categorizePhotos($photos) {
@@ -127,7 +150,7 @@ class Photos extends Model
         return $categorizedPhotos;
     }
 
-    private function categorizePhotosv2($photos) {
+    private function categorizePhotosv2($photos, $names = []) {
         $categorizedPhotos = [];
 
         foreach ($photos as $photo) {
@@ -140,6 +163,9 @@ class Photos extends Model
                 }
             }
 
+            if (in_array($photo->file_name, $names)) {
+                $photo->recently_upload = true;
+            }
         }
 
         $categorizedPhotos['all'] = $photos;
