@@ -16,8 +16,12 @@ use League\Flysystem\Exception;
 class Categories extends Model
 {
     public $table = 'categories';
-    public $fillable = ['id', 'parent_id', 'name', 'slug'];
+    public $fillable = ['id', 'name'];
 
+    /**
+     * @param $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function saveCategories($request) {
         // Category 1
         $categories = $request->categories;
@@ -53,9 +57,57 @@ class Categories extends Model
         } catch (ModelNotFoundException $e) {
             return response()->json(compact('e'), 200);
         }
-
     }
 
+    public function buildCategoryList() {
+        $categories = array();
+
+        try {
+            $parentCategories = Categories::where('parent_id', 0)->get();
+            foreach ($parentCategories as $parentCategory) {
+                // Find the children for this $parentCategory
+                $childCategories = Categories::where('parent_id', $parentCategory->id)->get();
+
+                // Create an array for parent category
+                $parent = $this->createCategoryArray($parentCategory);
+
+                foreach ($childCategories as $childCategory) {
+                    // Labels
+                    $labelCategories = Categories::where('parent_id', $childCategory->id)->get();
+
+                    $child = $this->createCategoryArray($childCategory);
+
+                    foreach($labelCategories as $labelCategory) {
+                        $label = $this->createCategoryArray($labelCategory);
+
+                        if (!isset($child['children'])) {
+                            $child['children'] = array($label);
+                        } else {
+                            array_push($child['children'], $label);
+                        }
+                    }
+
+                    if (!isset($parent['children'])) {
+                        $parent['children'] = array($child);
+                    } else {
+                        array_push($parent['children'], $child);
+                    }
+                }
+
+                $categories[$parentCategory->id] = $parent;
+            }
+        } catch (Exception $e) {
+            return response()->json(compact('e'), 500);
+        }
+
+
+        return response()->json(compact('categories'), 200);
+    }
+
+    /**
+     * @param $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function saveCategory($request) {
         try {
             $category = new Categories();
@@ -78,6 +130,7 @@ class Categories extends Model
 
     /**
      * @param $id
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function deleteCategory($id) {
         try {
@@ -100,6 +153,13 @@ class Categories extends Model
         } catch (Exception $e) {
             return response()->json(compact('e'), 500);
         }
+    }
 
+    protected function createCategoryArray($category) {
+        return array(
+            'id' => $category->id,
+            'name' => $category->name,
+            'display_order' => $category->display_order
+        );
     }
 }

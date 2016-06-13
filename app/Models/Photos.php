@@ -39,6 +39,28 @@ class Photos extends Model
     }
 
     /**
+     * Get labeled photos, filtered by $workorderId & $labelId.
+     * @param $workorderId
+     * @param $labelId
+     */
+    public function getLabeledPhotos($workorderId, $parentId, $subParentId, $labelName) {
+        try {
+            $label = Categories::where('name', $labelName)->first();
+            $photos = Photos::where('workorder_id', $workorderId)
+                ->where('parent_id', $parentId)
+                ->where('sub_parent_id', $subParentId)
+                ->where('label', $label->name)
+                ->get();
+            return response()->json(compact('photos'), 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(compact('e'), 500);
+        } catch (Exception $e) {
+            return response()->json(compact('e'), 500);
+        }
+
+    }
+
+    /**
      * @param $id
      */
     public function uploadPhoto($request, $id) {
@@ -82,21 +104,30 @@ class Photos extends Model
     }
 
     public function savePhotos($request) {
-
         try {
             foreach($request->photos as $photo) {
-                $p = Photos::find($photo['id']);
-                $p->label = $photo['label'];
-                $p->parent_id = $photo['parent_id'];
-                $p->sub_parent_id = $photo['sub_parent_id'];
-                $p->save();
+                if (!is_null($photo)) {
+                    if (!isset($photo['id'])) {
+                        foreach ($photo as $p) { $this->updatePhoto($p); }
+                    } else {
+                        $this->updatePhoto($photo);
+                    }
+                }
+
             }
-
             return response()->json(array('photos' => $request->photos), 200);
-
         } catch (ModelNotFoundException $e) {
             return response()->json(compact('e'), 200);
         }
+    }
+
+    protected function updatePhoto($photo) {
+        $p = Photos::find($photo['id']);
+        $p->label = $photo['label'];
+        $p->parent_id = $photo['parent_id'];
+        $p->sub_parent_id = $photo['sub_parent_id'];
+        $p->display_order = isset($photo['display_order']) ? $photo['display_order'] : null;
+        $p->save();
     }
 
     public function deletePhotos($request) {

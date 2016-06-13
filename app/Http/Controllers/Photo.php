@@ -16,10 +16,12 @@ use App\Models\Photos;
 
 class Photo extends BaseController {
     var $photoModel;
+    var $categoryModel;
 
     public function __construct()
     {
         $this->photoModel = new Photos();
+        $this->categoryModel = new Categories();
     }
 
     public function getPhotos($id) {
@@ -69,6 +71,15 @@ class Photo extends BaseController {
         catch (ModelNotFoundException $e) {
             return response()->json(compact('e'), 500);
         }
+    }
+
+    public function getCategoryTree() {
+        $tree = $this->categoryModel->buildCategoryList();
+        return response()->json(compact('tree'), 200);
+    }
+    
+    public function getLabeledPhotos($workorderId, $parentId, $subParentId, $labelName) {
+        return $this->photoModel->getLabeledPhotos($workorderId, $parentId, $subParentId, rawurldecode($labelName));
     }
 
     public function savePhotos(Request $request) {
