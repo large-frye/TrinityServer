@@ -30,6 +30,7 @@ class Categories extends Model
             foreach ($categories as $category) {
                 $cat = Categories::find($category['id']);
                 $cat->name = $category['name'];
+                $cat->display_order = $category['display_order'];
                 $cat->save();
             }
 
@@ -40,6 +41,7 @@ class Categories extends Model
                         foreach ($category1 as $category) {
                             $cat = Categories::find($category['id']);
                             $cat->name = $category['name'];
+                            $cat->display_order = $category['display_order'];
                             $cat->save();
                         }
                     }
