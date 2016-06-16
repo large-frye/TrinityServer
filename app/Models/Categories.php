@@ -44,7 +44,7 @@ class Categories extends Model
                             $cat->display_order = $category['display_order'];
                             $cat->save();
                         }
-                    }
+                    }   
 
                     return response()->json(compact('categories', 'subCategories'), 200);
                 }
