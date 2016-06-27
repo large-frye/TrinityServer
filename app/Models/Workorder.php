@@ -104,13 +104,15 @@ class Workorder extends Model {
                         return response()->json(compact('e'));
                     }
                 }
-
             }
+
+            // Use logSerivce to send data to logger.
+            Logger::log($data);
 
             // Transpose our $workorder object from $data
             $workorder = new Workorder();
             foreach ($data as $key => $value) {
-                if ($key != 'query_string') {
+                if (!in_array($key, array('query_string', 'updated_by'))) {
                     if ($key == 'adjuster') {
                         $workorder['adjuster_id'] = $adjusterId;
                     } else if ($key !== 'inspector') {
@@ -118,8 +120,6 @@ class Workorder extends Model {
                     }
                 }
             }
-
-            // Set $workorder to be date/time instead of a timestring, divide by 1000 since JS is in milliseconds.
 
             if (isset($data->id)) {
                 $workorder->exists = true;

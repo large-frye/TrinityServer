@@ -86,6 +86,10 @@ class Photo extends BaseController {
         return $this->photoModel->savePhotos($request);
     }
 
+    public function rotatePhotos(Request $request) {
+        return $this->photoModel->rotateImages($request);
+    }
+
     public function deletePhotos(Request $request, $workorderId) {
         $this->photoModel->deletePhotos($request);
         return $this->photoModel->getPhotos($workorderId);

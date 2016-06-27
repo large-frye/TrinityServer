@@ -14,4 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 class Log extends Model
 {
     protected $table = 'log';
+
+    public function updater() {
+        return $this->belongsTo('\App\User', 'updated_by');
+    }
 }

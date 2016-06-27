@@ -38,12 +38,14 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->get('/workorder/statuses', 'App\Http\Controllers\Workorders@getStatuses');
     $app->get('/workorder/{id}', 'App\Http\Controllers\Workorders@get');
 
+    $app->post('/workorder/log', 'App\Http\Controllers\Workorders@log');
     $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
     $app->post('/workorder/update', 'App\Http\Controllers\Workorders@update');
     $app->post('/workorders/notes/save/{id}', 'App\Http\Controllers\WorkorderNotes@saveNote');
 
     # Reports
     $app->get('/reports/get', 'App\Http\Controllers\Reports@get');
+    $app->get('/reports/export-csv/{type}', 'App\Http\Controllers\Reports@exportToExcel');
     $app->get('/reports/by-status/{status}/{type}', 'App\Http\Controllers\Reports@byStatus');
 
     # Inspections
@@ -81,6 +83,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
 
     $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
+    $app->post('/photos/rotate', 'App\Http\Controllers\Photo@rotatePhotos');
     $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
     $app->post('/photos/delete/{workorderId}', 'App\Http\Controllers\Photo@deletePhotos');
 
@@ -89,6 +92,9 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->post('/settings/categories/save-category', 'App\Http\Controllers\Settings@saveCategory');
     $app->get('/settings/categories/parents', 'App\Http\Controllers\Settings@getParents');
     $app->get('/settings/categories/delete/{id}', 'App\Http\Controllers\Settings@deleteCategory');
+
+    # Logger
+    $app->get('/logger/{id}', 'App\Http\Controllers\Logger@getWorkorderLog');
 
     # Resources
     $app->post('/resources/save', 'App\Http\Controllers\Resources@saveResource');

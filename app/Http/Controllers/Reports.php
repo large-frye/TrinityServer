@@ -8,9 +8,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\CorsMiddleware;
 use App\Models\Count;
 use App\Models\Field;
 use App\Models\Report;
+use App\Models\ReportType;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Input;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -18,6 +20,7 @@ use Illuminate\Http\Request;
 use App\Models\Workorder;
 use App\Models\Invoice;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Reports extends BaseController {
 
@@ -28,6 +31,7 @@ class Reports extends BaseController {
     var $ninetyDays;
     var $invoice;
     var $workorder;
+    var $typeToId;
 
     const NEW_INSPECTION = 1;
     const CALLED_PH = 2;
@@ -47,6 +51,9 @@ class Reports extends BaseController {
     const CANCELLED = 16;
     const CLOSED_CANCELLED = 17;
     const INSPECTED = 18;
+    const REPORTING = 19;
+    const INVOICE_ALACRITY = 20;
+    const INVOICING = 21;
 
     public function __construct() {
         $this->workorder = new Workorder();
@@ -56,6 +63,38 @@ class Reports extends BaseController {
         $this->thirtyDays = new \DateTime('- 30 days');
         $this->sixtyDays = new \DateTime('- 60 days');
         $this->ninetyDays = new \DateTime('- 90 days');
+
+        $this->typeToId = array(
+            'new' => ReportType::createReport(Reports::NEW_INSPECTION, 'new', false),
+            'open' => ReportType::createReport(array(Reports::CLOSED, Reports::CLOSED_CANCELLED), 'open', true),
+            'inspector-attention-required', ReportType::createReport(Reports::INSPECTOR_ATTENTION_REQUIRED, 'inspector-attention-required', false),
+            'office-attention-required' => ReportType::createReport(Reports::OFFICE_ATTENTION_REQUIRED, 'office-attention-required' , false),
+            'admin-attention-required' => ReportType::createReport(Reports::OFFICE_ATTENTION_REQUIRED, 'admin-attention-required' , false),
+            'new-pickups' => ReportType::createReport(Reports::NEW_PICKUP, 'new-pickups' , false),
+            'process-reschedule' => ReportType::createReport(array(Reports::IN_PROCESS, Reports::RESCHEDULE), 'process-reschedule' , false),
+            'on-hold' => ReportType::createReport(Reports::ON_HOLD, 'on-hold' , false),
+            'scheduled' => ReportType::createReport(Reports::SCHEDULED, 'scheduled' , false),
+            'inspected' => ReportType::createReport(Reports::INSPECTED, 'inspected' , false),
+            'pre-invoice' => ReportType::createReport(Reports::PRE_INVOICE, 'pre-invoice' , false),
+            'invoiced' => ReportType::createReport(Reports::INVOICED, 'invoiced' , false),
+            'reporting' => ReportType::createReport(Reports::REPORTING, 'reporting' , false),
+            'inv-alacrity' => ReportType::createReport(Reports::INVOICE_ALACRITY, 'inv-alacrity', false),
+            'invoicing' => ReportType::createReport(Reports::INVOICING, 'invoicing', false),
+            'closed' => ReportType::createReport(Reports::CLOSED, 'closed', false),
+            'cancelled' => ReportType::createReport(Reports::CANCELLED, 'cancelled' , false),
+            'cancelled-closed' => ReportType::createReport(Reports::CLOSED_CANCELLED, 'cancelled-closed', false),
+            'today' => ReportType::createReport(null, 'today', false, [$this->countModel->today, $this->countModel->tomorrow]),
+            'tomorrow' => ReportType::createReport(null, 'tomorrow' , false, [$this->countModel->tomorrow, $this->countModel->nextTwoDays]),
+            'yesterday' => ReportType::createReport(null, 'yesterday' , false, [$this->countModel->yesterday, $this->countModel->today] ),
+            'this-week' => ReportType::createReport(null, 'this-week' , false, [$this->countModel->thisWeek, $this->countModel->nextWeek] ),
+            'next-week' => ReportType::createReport(null, 'next-week' , false, [$this->countModel->nextWeek, $this->countModel->twoNextWeek] ),
+            'last-week' => ReportType::createReport(null, 'last-week' , false, [$this->countModel->lastWeek, $this->countModel->thisWeek] ),
+            'this-month' => ReportType::createReport(null, 'this-month' , false, [$this->countModel->thisMonth, $this->countModel->nextMonth] ),
+            'next-month' => ReportType::createReport(null, 'next-month' , false, [$this->countModel->nextMonth, $this->countModel->lastDayOfNextMonth] ),
+            'last-month' => ReportType::createReport(null, 'last-month' , false,  [$this->countModel->lastMonth, $this->countModel->thisMonth]),
+            'this-year' => ReportType::createReport(null, 'this-year' , false,  [$this->countModel->year, $this->countModel->nextYear]),
+            'last-year' => ReportType::createReport(null, 'last-year' , false, [$this->countModel->lastYear, $this->countModel->year])
+        );
     }
 
     public function generate($id) {
@@ -76,8 +115,9 @@ class Reports extends BaseController {
                 'Inspector', 'Date of Inspection', 'Date Created');
             $fields = $this->createAssociateFieldArray($stringFields, $fields);
             $name = array(ucfirst(str_replace('-', ' ', 'All')));
+            $header = 'All Inspections';
 
-            return response()->json(compact('reports', 'fields', 'name'));
+            return response()->json(compact('reports', 'fields', 'header', 'name'));
 
         } catch (Exception $e) {
             return response()->json(compact('e'), 500);
@@ -261,23 +301,15 @@ class Reports extends BaseController {
 
             switch ($status) {
                 case 'open':
-
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereNotIn('work_order.status_id', [Reports::CLOSED, Reports::CLOSED_CANCELLED])
-                        ->get();
-
+                    $reports = $this->reportsByStatus(array(Reports::CLOSED, Reports::CLOSED_CANCELLED), $inspectionType, true);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
-
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Open Inspections';
-
                     break;
 
                 case 'inspector-attention-required':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('work_order.status_id', '=', Reports::INSPECTOR_ATTENTION_REQUIRED)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::INSPECTOR_ATTENTION_REQUIRED, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Time of Inspection',  'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
@@ -285,29 +317,30 @@ class Reports extends BaseController {
                     break;
 
                 case 'office-attention-required':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('work_order.status_id', '=', Reports::OFFICE_ATTENTION_REQUIRED)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::OFFICE_ATTENTION_REQUIRED, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections Requiring Office Attention';
                     break;
 
+                case 'admin-attention-required':
+                    $reports = $this->reportsByStatus(Reports::OFFICE_ATTENTION_REQUIRED, $inspectionType);
+                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+                        'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections Requiring Admin Attention';
+                    break;
+
                 case 'new-pickups':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('work_order.status_id', '=', Reports::NEW_PICKUP)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::NEW_PICKUP, $inspectionType);
                     $stringFields = array('Customer ID', 'Inspector', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'New Pickups From Inspectors';
                     break;
                 case 'new':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::NEW_INSPECTION)
-                        ->get();
-
+                    $reports = $this->reportsByStatus(Reports::NEW_INSPECTION, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
@@ -315,35 +348,29 @@ class Reports extends BaseController {
                     break;
 
                 case 'process-reschedule':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereIn('status_id', [Reports::IN_PROCESS, Reports::RESCHEDULE])
-                        ->get();
-
+                    $reports = $this->reportsByStatus([Reports::IN_PROCESS, Reports::RESCHEDULE], $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
                         'Date of Inspection', 'Inspection Type', 'Date Created');
-
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Need To Be Scheduled';
                     break;
 
                 case 'on-hold':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::ON_HOLD)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::ON_HOLD, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are On Hold';
                     break;
+
                 case 'scheduled':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::SCHEDULED)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::SCHEDULED, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State',
                         'Adjuster', 'Date of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Scheduled Inspections';
                     break;
+
                 case 'post-inspection-date':
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::SCHEDULED)
@@ -354,92 +381,79 @@ class Reports extends BaseController {
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are Past Their Inspection Date';
                     break;
+
                 case 'inspected':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::INSPECTED)
-                        ->get();
+                    $reports = $this-$this->reportsByStatus(Reports::INSPECTED, $inspectionType);
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspector', 'Inspection Time',
                         'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
-                    $header = 'Inspected';
+                    $header = 'Inspected That Have Been Completed';
                     break;
+
                 case 'pre-invoice':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::PRE_INVOICE)
-                        ->get();
+                    $reports = $this->getInspectorReports(Reports::PRE_INVOICE, $status);
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspection Outcome', 'Date Invoiced',
                         'Adjuster', 'Insurance Company', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Need one';
                     break;
+
                 case 'invoiced':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::INVOICED)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::INVOICED, $inspectionType);
                     $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
                         'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Have Been Invoiced & Are Waiting For Payment';
                     break;
-                case 'invoiced-past-30-days':
-                    $reports = DB::table('work_order')->join('invoice', 'work_order.invoice_id', '=', 'invoice.id')
-                        ->where('work_order.status_id', '=', Reports::INVOICED)
-                        ->whereBetween('invoice.date', [strtotime($this->sixtyDays->format('Y-m-d h:i:s')),
-                            strtotime($this->thirtyDays->format('Y-m-d h:i:s'))])
-                        ->get();
-                    $stringFields = array('Customer ID', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
-                        'Date of Inspection', 'Date Invoiced', 'Claim #', 'Insured', 'State');
+
+                case 'reporting':
+                    $reports = $this->reportsByStatus(Reports::REPORTING, $inspectionType);
+                    $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
+                        'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
-                    $header = 'Inspections Waiting For Payment Longer Than 30 Days';
+                    $header = 'Inspections That Are Ready For A Report';
                     break;
-                case 'invoiced-past-60-days':
-                    $reports = DB::table('work_order')->join('invoice', 'work_order.invoice_id', '=', 'invoice.id')
-                        ->where('work_order.status_id', '=', Reports::INVOICED)
-                        ->whereBetween('invoice.date', [strtotime($this->ninetyDays->format('Y-m-d h:i:s')),
-                            strtotime($this->sixtyDays->format('Y-m-d h:i:s'))])
-                        ->get();
-                    $stringFields = array('Customer ID', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
-                        'Date of Inspection', 'Date Invoiced', 'Claim #', 'Insured', 'State');
+
+                case 'inv-alacrity':
+                    $reports = $this->reportsByStatus(Reports::INVOICE_ALACRITY, $inspectionType);
+                    $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
+                        'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
-                    $header = 'Inspections Waiting For Payment Longer Than 60 Days';
+                    $header = 'Inspections That Are Ready To Be Submitted To Alacrity For Payment';
                     break;
-                case 'invoiced-past-90-days':
-                    $reports = DB::table('work_order')->join('invoice', 'work_order.invoice_id', '=', 'invoice.id')
-                        ->where('work_order.status_id', '=', Reports::INVOICED)
-                        ->where('invoice.date', '<', strtotime($this->ninetyDays->format('Y-m-d h:i:s')))
-                        ->get();
-                    $stringFields = array('Customer ID', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
-                        'Date of Inspection', 'Date Invoiced', 'Claim #', 'Insured', 'State');
-                    $header = 'Inspections Waiting For Payment Longer Than 90 Days';
+
+                case 'invoicing':
+                    $reports = $this->reportsByStatus(Reports::INVOICING, $inspectionType);
+                    $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
+                        'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections Ready For Invoicing Through Quickbooks';
                     break;
+
                 case 'closed':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::CLOSED)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::CLOSED, $inspectionType);
                     $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
                         'Date of Inspection', 'Date Invoiced', 'Date Pymt Received', 'Date Created');
                     $header = 'Closed Inspections';
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
+
                 case 'cancelled':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::CANCELLED)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::CANCELLED, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date Cancelled', 'Date Created');
                     $header = 'Cancelled Inspections';
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
+
                 case 'cancelled-closed':
-                    $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->where('status_id', '=', Reports::CLOSED_CANCELLED)
-                        ->get();
+                    $reports = $this->reportsByStatus(Reports::CLOSED_CANCELLED, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date Cancelled', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Closed Inspections (Cancelled)';
                     break;
+
                 case 'today':
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->today, $this->countModel->tomorrow])
@@ -482,7 +496,7 @@ class Reports extends BaseController {
 
                 case 'last-week':
                     $reports = $this->getBaseQuery(false, $inspectionType)
-                        ->whereBetween('date_of_inspection', [$this->countModel->lastWeek, $this->countModel->nextWeek])
+                        ->whereBetween('date_of_inspection', [$this->countModel->lastWeek, $this->countModel->thisWeek])
                         ->get();
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
@@ -561,6 +575,49 @@ class Reports extends BaseController {
         }
     }
 
+    private function reportsByStatus($status, $inspectionType, $not = false, $date = false) {
+        $base = $this->getBaseQuery(false, $inspectionType);
+        if (is_array($status)) {
+            if ($not) {
+                $base->whereNotIn('work_order.status_id', $status);
+            } else {
+                $base->whereIn('work_order.status_id', $status);
+            }
+        } else if ($date) {
+            $base->whereBetween('date_of_inspection', $date);
+        } else {
+            $base->where('work_order.status_id', '=', $status);
+        }
+        return $base->get();
+    }
+
+    public function exportToExcel(Request $request, $type) {
+        $data = null;
+
+        if (isset($type) && isset($this->typeToId[$type])) {
+            $reportType = $this->typeToId[$type];
+            $data = $this->reportsByStatus($reportType->getId(), null, $reportType->getNegate(), $reportType->getDate());
+        } else {
+            $data = $this->getBaseQuery(false, false)->get();
+        }
+
+        // convert all children to array
+        foreach($data as $key => $child) {
+            $data[$key] = (array) $child;
+        }
+
+        $status = Excel::create('reports', function ($excel) use (&$data) {
+            $excel->sheet('sheetname', function ($sheet) use (&$data) {
+                $sheet->fromArray((array) $data);
+            });
+        })->store('csv');
+
+        if ($status) {
+            $file = $request->session()->get('fileBase') . '/reports.csv';
+            return response()->json(array('file' => $file));
+        }
+    }
+
     private function createAssociateFieldArray($stringFields, $fields) {
         foreach ($stringFields as $field) {
             array_push($fields, array('header' => $field, 'key' => strtolower(str_replace(' ', '_', $field))));
@@ -591,7 +648,6 @@ class Reports extends BaseController {
         }
         return false;
     }
-
 
     /**
      * @param bool $metaKey

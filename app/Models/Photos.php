@@ -130,6 +130,26 @@ class Photos extends Model
         $p->save();
     }
 
+    /**
+     * @param $request
+     * @throws Exception
+     */
+    public function rotateImages($request) {
+        // Need to create a iMagick
+        if ($request->has('files')) {
+            $files = $request->files;
+            foreach($files as $file) {
+                if (isset($file['url'])) {
+                    $image = new \Imagick($request->file_url);
+                    echo $image->getImageOrientation();
+                } else {
+                    throw new Exception("url not set");
+                }
+            }
+
+        }
+    }
+
     public function deletePhotos($request) {
         try {
             if ($request->has('photos')) {

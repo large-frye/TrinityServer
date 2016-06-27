@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Logger;
 use App\Models\WorkorderStatuses;
 use App\User;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -56,6 +57,8 @@ class Workorders extends BaseController
 
     public function getWorkordersByTime($time, $type) { return $this->workorder->findWorkordersByTime($time, $type); }
 
+    public function log(Request $request) { return Logger::log($request); }
+
     /**
      * @param Request $request
      * @param $id
@@ -75,7 +78,8 @@ class Workorders extends BaseController
     public function all() { return $this->_workorder->getAllWorkOrders(); }
 
     public function getStatuses() {
-        $statuses = WorkorderStatuses::all();
+        $statuses = WorkorderStatuses::whereNotIn('id', array(Reports::ALERT, Reports::CALLED_PH, Reports::SENT, Reports::INSPECTION_COMPLETED, Reports::PRE_INVOICE))
+        ->get();
         return response()->json(compact('statuses'));
     }
 }

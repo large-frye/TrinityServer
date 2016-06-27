@@ -13,22 +13,26 @@ class CorsMiddleware
 {
 
     const ENDPOINT = 'http://52.2.169.5:8000';
+    public static $crossOrigin = CorsMiddleware::ENDPOINT;
+    var $fileBase = 'prod';
 
-    public function handle($request, \Closure $next)
-    {
+    public function handle($request, \Closure $next) {
         $response = $next($request);
         $url = $request->url();
-        $crossOrigin = CorsMiddleware::ENDPOINT;
 
         preg_match('/api\.trinity\.dev/', $url, $matches);
 
         if (count($matches) > 0) {
-            $crossOrigin = 'http://localhost:8000';
+            CorsMiddleware::$crossOrigin = 'http://localhost:8000';
+            $this->fileBase = 'storage';
         }
 
-        $response->header('Access-Control-Allow-Methods', 'HEAD, GET, POST, PUT, PATCH, DELETE');
+        $request->session()->put('fileBase', $this->fileBase);
+        $request->session()->save();
+
+        $response->header('Access-Control-Allow-Methods', '*');
         $response->header('Access-Control-Allow-Headers', $request->header('Access-Control-Request-Headers'));
-        $response->header('Access-Control-Allow-Origin', $crossOrigin);
+        $response->header('Access-Control-Allow-Origin', CorsMiddleware::$crossOrigin);
         $response->header('Access-Control-Allow-Credentials', 'true');
 
         return $response;
