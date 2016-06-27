@@ -14,7 +14,7 @@ class CorsMiddleware
 
     const ENDPOINT = 'http://52.2.169.5:8000';
     public static $crossOrigin = CorsMiddleware::ENDPOINT;
-    var $fileBase = 'prod';
+    var $fileBase = '/usr/share/nginx/html/trinity-server/storage/exports'; // Not ideal this is static.
 
     public function handle($request, \Closure $next) {
         $response = $next($request);
