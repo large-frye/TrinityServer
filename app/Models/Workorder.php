@@ -106,9 +106,6 @@ class Workorder extends Model {
                 }
             }
 
-            // Use logSerivce to send data to logger.
-            Logger::log($data);
-
             // Transpose our $workorder object from $data
             $workorder = new Workorder();
             foreach ($data as $key => $value) {
@@ -129,8 +126,18 @@ class Workorder extends Model {
                 $workorder->save();
             }
 
-            $workorder->adjuster;
-            $workorder->adjuster->profile;
+            if (isset($workorder->adjuster_id)) {
+                $workorder->adjuster;
+                $workorder->adjuster->profile;
+            }
+
+            // New order logging
+            if (!isset($data->id)) {
+                $data->id = $workorder->id;
+            }
+
+            // Log events
+            Logger::log($data);
 
             return $workorder;
 
@@ -149,11 +156,14 @@ class Workorder extends Model {
         try {
             $order = Workorder::find($id);
             $order->adjuster;
-            $order->adjuster->profile;
-            $order->adjuster->rolesUser;
-            if (isset($order->inspector_id) && $order->inspector_id != null) {
-                $order->inspector;
-                $order->inspector->profile;
+
+            if (isset($order->adjuster->profile)) {
+                $order->adjuster->profile;
+                $order->adjuster->rolesUser;
+                if (isset($order->inspector_id) && $order->inspector_id != null) {
+                    $order->inspector;
+                    $order->inspector->profile;
+                }
             }
 
             // Add our inspection type

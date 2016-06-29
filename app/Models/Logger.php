@@ -62,8 +62,12 @@ class Logger
 
                 // Get changed items
                 array_push($changedItems, Logger::findChangedItems($data, $order));
-                array_push($changedItems, Logger::findChangedItems($data['adjuster'], $adjuster));
-                array_push($changedItems, Logger::findChangedItems($data['inspector'], $inspector));
+
+                if (isset($data['adjuster']))
+                    array_push($changedItems, Logger::findChangedItems($data['adjuster'], $adjuster));
+
+                if (isset($data['inspector']))
+                    array_push($changedItems, Logger::findChangedItems($data['inspector'], $inspector));
 
                 $log->message = Logger::createLogMessage($changedItems);
                 $log->fields = Logger::getFields($changedItems);
