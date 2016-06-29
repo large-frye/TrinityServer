@@ -24,7 +24,7 @@ class WorkorderNotes extends BaseController {
 
     public function getNotes($workorderId) {
         try {
-            $notes = Notes::where('workorder_id', $workorderId)->get();
+            $notes = Notes::where('workorder_id', $workorderId)->orderBy('created_at', 'desc')->get();
             return response()->json(compact('notes'), 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(compact('e'), 200);

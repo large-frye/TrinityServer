@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Logger;
+use App\Models\Report;
 use App\Models\WorkorderStatuses;
 use App\User;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -77,9 +78,16 @@ class Workorders extends BaseController
 
     public function all() { return $this->_workorder->getAllWorkOrders(); }
 
+    /**
+     * Get all statuses, some are hidden per request. 
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function getStatuses() {
-        $statuses = WorkorderStatuses::whereNotIn('id', array(Reports::ALERT, Reports::CALLED_PH, Reports::SENT, Reports::INSPECTION_COMPLETED, Reports::PRE_INVOICE))
-        ->get();
+        $hiddenStatuses = [Reports::ALERT, Reports::CALLED_PH, Reports::SENT, Reports::INSPECTION_COMPLETED,
+            Reports::PRE_INVOICE, Reports::INVOICED];
+        $statuses = WorkorderStatuses::whereNotIn('id', $hiddenStatuses)
+            ->orderBy('display_order')
+            ->get();
         return response()->json(compact('statuses'));
     }
 }

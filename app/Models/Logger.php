@@ -8,49 +8,69 @@
 
 namespace App\Models;
 
-
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use League\Flysystem\Exception;
 
 class Logger
 {
-
     const LOG_DELIMITER = ";";
     const LOG_KEY_DELIMITER = ",";
+    const FILE = 'file';
+    const TEXT = 'text';
 
     /**
-     * Log workorder changes
+     * Log when a change has happened to a work order.
      * @param $data
+     * @param $type
      * @return Log
+     * @throws Exception
      */
     public static function log($data) {
         $changedItems = [];
         $adjuster = [];
         $inspector = [];
+        $type = Logger::TEXT;
+        $attachmentLocation = "";
 
-        // Check to see if the workorder exists;
         try {
             $workorder = Workorder::find($data->id);
-            if (isset($data->adjuster)) {
-                $workorder->adjuster;
-                $workorder->inspector;
-                $adjuster = $workorder['relations']['adjuster']['attributes'];
-                $inspector = $workorder['relations']['inspector']['attributes'];
+            $log = new Log();
+            $log->updated_by = $data->updated_by;
+            $log->workorder_id = $data->id;
+
+
+            if (get_class($data) == 'Illuminate\Http\Request') {
+                if ($data->has('type') && $data->type == Logger::FILE) {
+                    $type = Logger::FILE;
+                }
+
+                if ($data->has('attachment_location')) {
+                    $attachmentLocation = $data->attachment_location;
+                }
+
+                $log->message = "added file";
+            } else {
+                if (isset($data->adjuster)) {
+                    $workorder->adjuster;
+                    $workorder->inspector;
+                    $adjuster = $workorder['relations']['adjuster']['attributes'];
+                    $inspector = $workorder['relations']['inspector']['attributes'];
+                }
+
+                $order = $workorder['attributes'];
+                $data = get_object_vars($data);
+
+                // Get changed items
+                array_push($changedItems, Logger::findChangedItems($data, $order));
+                array_push($changedItems, Logger::findChangedItems($data['adjuster'], $adjuster));
+                array_push($changedItems, Logger::findChangedItems($data['inspector'], $inspector));
+
+                $log->message = Logger::createLogMessage($changedItems);
+                $log->fields = Logger::getFields($changedItems);
             }
 
-            $order = $workorder['attributes'];
-            $data = get_object_vars($data);
-
-            // Get changed items
-            array_push($changedItems, Logger::findChangedItems($data, $order));
-            array_push($changedItems, Logger::findChangedItems($data['adjuster'], $adjuster));
-            array_push($changedItems, Logger::findChangedItems($data['inspector'], $inspector));
-
-            $log = new Log();
-            $log->workorder_id = $data['id'];
-            $log->message = Logger::createLogMessage($changedItems);
-            $log->updated_by = $data['updated_by'];
-            $log->fields = Logger::getFields($changedItems);
+            $log->type = $type;
+            $log->attachment_location = $attachmentLocation;
             $log->save();
 
             return $log;
@@ -73,7 +93,7 @@ class Logger
                     . Logger::LOG_DELIMITER;
             }
         }
-        return $msg;
+        return substr($msg, 0, strlen($msg) - 1);
     }
 
     /**
