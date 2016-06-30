@@ -63,7 +63,9 @@ class Workorder extends Model {
                 $adjuster = (object) $data->adjuster;
                 if (isset($adjuster->id)) {
                     $adjusterId = $adjuster->id;
-                    DB::table('user_profiles')->where('user_id', $adjuster->id)->update($adjuster->profile);
+                    if (isset($adjuster->profile)) {
+                        DB::table('user_profiles')->where('user_id', $adjuster->id)->update($adjuster->profile);
+                    }
                 } else {
                     // Create adjuster
                     try {
