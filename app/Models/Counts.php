@@ -8,6 +8,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\Reports;
 use Illuminate\Database\Eloquent\Model;
 use DateTime;
 use DB;
@@ -61,9 +62,42 @@ class Counts extends Model {
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->year}' AND '{$this->countModel->nextYear}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) this_year"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->year}' AND '{$this->countModel->nextYear}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_this_year"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastYear}' AND '{$this->countModel->year}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) last_year"),
-            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastYear}' AND '{$this->countModel->year}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_last_year")
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastYear}' AND '{$this->countModel->year}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_last_year"),
+            DB::raw("CAST(sum(case when inspection_type = " . Reports::ON_HOLD . " then 1 else 0 end) AS UNSIGNED) on_hold")
         );
         $results = $query->get();
         return $results;
+    }
+
+    /**
+     * Find all the counts for only top tables on report listing page
+     * @param Request $request
+     * @return mixed
+     */
+    public function findTopCounts($request) {
+        if (isset($request)) {
+            // Todo:
+        }
+
+        return DB::table('work_order')
+            ->select(
+                DB::raw("CAST(SUM(CASE WHEN attention_type = '" . Reports::INSPECTOR_ATTN. "' then 1 else 0 end) AS UNSIGNED) inspector_attention_required"),
+                DB::raw("CAST(SUM(CASE WHEN attention_type = '" . Reports::OFFICE_ATTN . "' then 1 else 0 end) AS UNSIGNED) office_attention_required"),
+                DB::raw("CAST(SUM(CASE WHEN attention_type = '" . Reports::ADMIN_ATTN . "' then 1 else 0 end) AS UNSIGNED) admin_attention_required"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::ON_HOLD . " then 1 else 0 end) AS UNSIGNED) on_hold"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::ON_HOLD . " then 1 else 0 end) AS UNSIGNED) on_hold"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::NEW_INSPECTION . " then 1 else 0 end) AS UNSIGNED) new"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::NEW_PICKUP . " then 1 else 0 end) AS UNSIGNED) new_pickups"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::RESCHEDULE . " then 1 else 0 end) AS UNSIGNED) reschedule"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::IN_PROCESS . " then 1 else 0 end) AS UNSIGNED) in_process"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::SCHEDULED . " then 1 else 0 end) AS UNSIGNED) scheduled"),
+                DB::raw("CAST(SUM(CASE WHEN date_of_inspection < now() && status_id = " . Reports::SCHEDULED . " then 1 else 0 end) AS UNSIGNED) post_inspection_date"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::INSPECTED . " then 1 else 0 end) AS UNSIGNED) inspected"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::REPORTING . " then 1 else 0 end) AS UNSIGNED) reporting"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::INVOICE_ALACRITY . " then 1 else 0 end) AS UNSIGNED) inv_alacrity"),
+                DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::INVOICING . " then 1 else 0 end) AS UNSIGNED) invoicing"),
+                DB::raw("CAST(SUM(CASE WHEN status_id IN (" . Reports::CANCELLED . ", " . Reports::CLOSED_CANCELLED . " ) then 1 else 0 end) AS UNSIGNED) cancelled")
+            )
+            ->get();
     }
 }

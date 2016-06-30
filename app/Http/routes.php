@@ -60,6 +60,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # Counts (sub of workorders)
     $app->get('/workorders/counts', 'App\Http\Controllers\Workorders@getCounts');
+    $app->get('/workorders/getTopCounts', 'App\Http\Controllers\Workorders@getTopCounts');
 
     # Clients
     $app->get('/users/insured/{id}', 'App\Http\Controllers\Account@getInsuredProfile');

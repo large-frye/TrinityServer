@@ -14,6 +14,7 @@ use App\Models\WorkorderStatuses;
 use App\User;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
+use League\Flysystem\Exception;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Workorder;
 
@@ -48,12 +49,27 @@ class Workorders extends BaseController
     /**
      * @return mixed
      */
-    public function getCounts() {
+    public function getCounts(Request $request) {
         $basic = $this->counts->findCounts(0);
         $expert = $this->counts->findCounts(1);
         $ladderAssist = $this->counts->findCounts(5);
+        $topCounts = $this->counts->findTopCounts($request);
 
-        return response()->json(compact('basic', 'expert', 'ladderAssist'), 200);
+        return response()->json(compact('basic', 'expert', 'ladderAssist', 'topCounts'), 200);
+    }
+
+    /**
+     * Returns top status counts
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function getTopCounts(Request $request) {
+        try {
+            $counts = $this->counts->findTopCounts($request);
+            return response()->json(compact('counts'), 200);
+        } catch (Exception $e) {
+            return response()->json(array('error' => $e->getMessage()), 500);
+        }
     }
 
     public function getWorkordersByTime($time, $type) { return $this->workorder->findWorkordersByTime($time, $type); }
