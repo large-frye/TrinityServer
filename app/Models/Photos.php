@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Input;
+use Intervention\Image\Facades\Image;
 use League\Flysystem\Exception;
 use App\Util\Shared;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,9 @@ class Photos extends Model
 {
     public $table = 'photos';
     public $fillable = ['file_name', 'workorder_id', 'label', 'parent_id', 'sub_parent_id', 'file_url', 'id'];
+
+    const RESIZE_WIDTH = 480;
+    const RESIZE_HEIGHT = 360;
 
     /**
      * @param $id
@@ -61,7 +65,10 @@ class Photos extends Model
     }
 
     /**
+     * Upload a photo to s3 and save.
+     * @param $request
      * @param $id
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function uploadPhoto($request, $id) {
         $shared = new Shared();
@@ -101,6 +108,11 @@ class Photos extends Model
         } catch (\Exception $e) {
             return response()->json(compact('e'), 200);
         }
+    }
+
+    public function resize($photo, $width = Photos::RESIZE_WIDTH, $height = Photos::RESIZE_HEIGHT) {
+        $img = Image::make($photo->file_url)->resize(Photos::RESIZE_WIDTH, Photos::RESIZE_HEIGHT);
+        $img->save('/php/test.jpg');
     }
 
     public function savePhotos($request) {

@@ -26,6 +26,8 @@ $app->register('App\Providers\AppServiceProvider');
 $app->withFacades();
 $app->configure('jwt');
 class_alias('Tymon\JWTAuth\Facades\JWTAuth', 'JWTAuth');
+class_alias('Intervention\Image\Facades\Image', 'Image');
+// class_alias('I')
 
 $app->withEloquent();
 
@@ -124,5 +126,6 @@ $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
 });
 
 $app->register('Tymon\JWTAuth\Providers\JWTAuthServiceProvider');
+$app->register('Intervention\Image\ImageServiceProvider');
 
 return $app;

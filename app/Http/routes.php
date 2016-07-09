@@ -78,11 +78,11 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     # Photos
     $app->get('/photos/sub-categories/{parentId}', 'App\Http\Controllers\Photo@getSubCategories');
     $app->get('/photos/parent-categories', 'App\Http\Controllers\Photo@getParentCategories');
-//    $app->get('/photos/category-tree', 'App\Http\Controllers\Photo@getCategoryTree');
     $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
     $app->get('/photos/{workorderId}/{parentId}/{subParentId}/{labelName}', 'App\Http\Controllers\Photo@getLabeledPhotos');
     $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
 
+    $app->post('/photos/resize', 'App\Http\Controllers\Photo@resizePhotos');
     $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
     $app->post('/photos/rotate', 'App\Http\Controllers\Photo@rotatePhotos');
     $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');

@@ -34,6 +34,7 @@ return array(
     'League\\Flysystem\\' => array($vendorDir . '/league/flysystem/src'),
     'Laravel\\Lumen\\' => array($vendorDir . '/laravel/lumen-framework/src'),
     'JmesPath\\' => array($vendorDir . '/mtdowling/jmespath.php/src'),
+    'Intervention\\Image\\' => array($vendorDir . '/intervention/image/src/Intervention/Image'),
     'Illuminate\\View\\' => array($vendorDir . '/illuminate/view'),
     'Illuminate\\Validation\\' => array($vendorDir . '/illuminate/validation'),
     'Illuminate\\Translation\\' => array($vendorDir . '/illuminate/translation'),

@@ -370,6 +370,14 @@ class Reports extends BaseController {
                     $header = 'Inspections That Need To Be Scheduled';
                     break;
 
+                case 'reschedule':
+                    $reports = $this->reportsByStatus(Reports::RESCHEDULE, $inspectionType);
+                    $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
+                        'Date of Inspection', 'Inspection Type', 'Date Created');
+                    $fields = $this->createAssociateFieldArray($stringFields, $fields);
+                    $header = 'Inspections That Need To Be Rescheduled';
+                    break;
+
                 case 'on-hold':
                     $reports = $this->reportsByStatus(Reports::ON_HOLD, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',

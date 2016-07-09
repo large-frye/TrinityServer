@@ -2,10 +2,12 @@
 
 namespace App\Util;
 
+use App\Models\Photos;
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 use App\Models\ACL;
 use Illuminate\Support\Facades\Log;
+use Intervention\Image\Facades\Image;
 use League\Flysystem\Exception;
 
 /**
@@ -64,8 +66,13 @@ class Shared
                     ));
 
                     $url = 'https://s3.amazonaws.com/trinity-content/' . $path;
+
+                    // $img = Image::make($url)->resize(Photos::RESIZE_WIDTH, Photos::RESIZE_HEIGHT);
+
                     $urls[$file] = $url;
                 } catch (S3Exception $e) {
+                    return response()->json(compact('e'), 200);
+                } catch (Exception $e) {
                     return response()->json(compact('e'), 200);
                 }
             }

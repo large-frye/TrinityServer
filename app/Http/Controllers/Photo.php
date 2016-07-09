@@ -94,4 +94,8 @@ class Photo extends BaseController {
         $this->photoModel->deletePhotos($request);
         return $this->photoModel->getPhotos($workorderId);
     }
+
+    public function resizePhotos(Request $request) {
+        return $this->photoModel->resize($request);
+    }
 }
