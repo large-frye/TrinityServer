@@ -44,14 +44,16 @@ class Shared
 
     public function upload($files, $input, $path) {
         $urls = [];
+
         try {
             $this->files = $files;
             $this->input = $input;
+            $key = '';
 
             foreach($this->files as $file => $value) {
                 $this->file = $this->files[$file];
                 $this->error = $this->file['error'];
-                $path .= '/' . str_replace('/', '', $this->file['name']);
+                $key = $path . '/' . str_replace('/', '', $this->file['name']);
 
                 if ($this->error !== 0) {
                     return 'Error uploading file(s)';
@@ -61,14 +63,11 @@ class Shared
                     Shared::createS3Client()->putObject(array(
                         'ACL' => $this->acl->getPublic(),
                         'Bucket' => Shared::BUCKET,
-                        'Key' => $path,
+                        'Key' => $key,
                         'SourceFile' => $this->file['tmp_name']
                     ));
 
-                    $url = 'https://s3.amazonaws.com/trinity-content/' . $path;
-
-                    // $img = Image::make($url)->resize(Photos::RESIZE_WIDTH, Photos::RESIZE_HEIGHT);
-
+                    $url = 'https://s3.amazonaws.com/trinity-content/' . $key;
                     $urls[$file] = $url;
                 } catch (S3Exception $e) {
                     return response()->json(compact('e'), 200);

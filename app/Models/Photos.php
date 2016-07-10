@@ -65,7 +65,7 @@ class Photos extends Model
     }
 
     /**
-     * Upload a photo to s3 and save.
+     * Resize, upload photos to s3 and save.
      * @param $request
      * @param $id
      * @return \Symfony\Component\HttpFoundation\Response
@@ -73,12 +73,12 @@ class Photos extends Model
     public function uploadPhoto($request, $id) {
         $shared = new Shared();
         $path = 'inspections/' . $id . '/photos';
-        $urls = $shared->upload($_FILES, $request, $path);
-
-        // store all the photo names
         $names = [];
 
         try {
+            $this->resizeBatchPhotos($_FILES);
+            $urls = $shared->upload($_FILES, $request, $path);
+
             foreach ($_FILES as $key => $value) {
                 $file = $_FILES[$key];
 
@@ -106,13 +106,30 @@ class Photos extends Model
         } catch (QueryException $e) {
             return response()->json(compact('e'), 200);
         } catch (\Exception $e) {
-            return response()->json(compact('e'), 200);
+            return response()->json(array('error' => $e->getMessage()), 200);
         }
     }
 
+    /**
+     * Resize a group of photos (for loop to resize function)
+     * @param $photos
+     */
+    public function resizeBatchPhotos($photos) {
+        foreach ($photos as $photo) {
+            $this->resize((object) $photo);
+        }
+    }
+
+    /**
+     * Use fit instead of resize, even though it is called resize
+     * Check out documentation at http://image.intervention.io/api/fit
+     * @param $photo
+     * @param int $width
+     * @param int $height
+     */
     public function resize($photo, $width = Photos::RESIZE_WIDTH, $height = Photos::RESIZE_HEIGHT) {
-        $img = Image::make($photo->file_url)->resize(Photos::RESIZE_WIDTH, Photos::RESIZE_HEIGHT);
-        $img->save('/php/test.jpg');
+        $img = Image::make($photo->tmp_name)->fit(Photos::RESIZE_WIDTH, Photos::RESIZE_HEIGHT);
+        $img->save($photo->tmp_name);
     }
 
     public function savePhotos($request) {
