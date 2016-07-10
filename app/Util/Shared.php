@@ -70,15 +70,15 @@ class Shared
                     $url = 'https://s3.amazonaws.com/trinity-content/' . $key;
                     $urls[$file] = $url;
                 } catch (S3Exception $e) {
-                    return response()->json(compact('e'), 200);
+                    throw new Exception($e->getMessage());
                 } catch (Exception $e) {
-                    return response()->json(compact('e'), 200);
+                    throw new Exception($e->getMessage());
                 }
             }
 
             return $urls;
         } catch (\Exception $e) {
-            return response()->json(compact('e'), 200);
+            throw new Exception($e->getMessage());
         }
     }
 
