@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categories;
+use App\Util\Shared;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -97,5 +98,22 @@ class Photo extends BaseController {
 
     public function resizePhotos(Request $request) {
         return $this->photoModel->resize($request);
+    }
+
+    /**
+     * Use workorder_id {$id} to find all the photo files and send to Shared::createZip
+     * @param $id
+     */
+    public function getZippedFiles($id) {
+        try {
+            $files = Photos::where('workorder_id', $id)->get();
+            $zipFileUrl = Shared::createZip($files, '/tmp/photos' . $id . '.zip', $id);
+            $zipFileUrl = 'https://s3.amazonaws.com/trinity-content/' . $zipFileUrl;
+            return response()->json(array('file' => $zipFileUrl), 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(compact('e'), 500);
+        } catch (\Exception $e) {
+            return response()->json(compact('e'), 500);
+        }
     }
 }
