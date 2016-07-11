@@ -27,6 +27,7 @@ class Count
         $this->twoNextWeek = strtotime('+2 week') * 1000;
         $this->thisMonth = strtotime('first day of this month') * 1000;
         $this->lastMonth = strtotime('first day of last month') * 1000;
+        $this->lastDayofLastMonth = strtotime('last day of last month') * 1000;
         $this->lastDayOfThisMonth = strtotime('last day of this month') * 1000;
         $this->nextMonth = strtotime('first day of next month') * 1000;
         $this->lastDayOfNextMonth = strtotime('last day of next month') * 1000;

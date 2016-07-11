@@ -657,9 +657,9 @@ class Reports extends BaseController {
 
     private function getInspectionType($type) {
         switch (strtolower($type)) {
-            case 'basic':
+            case 'ladder-assist-with-report':
                 return 0;
-            case 'ladderassist':
+            case 'ladder-assist':
                 return 5;
             case 'expert':
                 return 1;
@@ -669,10 +669,12 @@ class Reports extends BaseController {
 
     private function getInspectionStr($type) {
         switch (strtolower($type)) {
-            case 'basic':
+            case 'ladder-assist-with-report':
+                return 'Ladder Assist w/ Report';
+            case 'cancelled':
             case 'expert':
                 return ucfirst($type);
-            case 'ladderassist':
+            case 'ladder-assist':
                 return 'Ladder Assist';
         }
         return false;
@@ -699,9 +701,11 @@ class Reports extends BaseController {
             ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
 
         // Delimit by inspection type
-        if ($inspectionType && $inspectionType != 'all') {
+        if ($inspectionType && !in_array($inspectionType, array('all', 'cancelled'))) {
             $inspectionType = $this->getInspectionType($inspectionType);
             $query->where('work_order.inspection_type', $inspectionType);
+        } else if ($inspectionType == 'cancelled') {
+            $query->where('work_order.status_id', Reports::CANCELLED);
         }
 
         return $query;

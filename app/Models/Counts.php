@@ -18,6 +18,7 @@ class Counts extends Model {
 
     const EXPERT = 1;
     const BASIC = 0;
+    const CANCELLED = 16;
 
     var $countModel;
 
@@ -43,26 +44,37 @@ class Counts extends Model {
         $query = DB::table('work_order')->select(
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->today}' AND '{$this->countModel->tomorrow}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) today"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->today}' AND '{$this->countModel->tomorrow}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) newToday"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->today}' AND '{$this->countModel->tomorrow}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) todayCancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->yesterday}' AND '{$this->countModel->today}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) yesterday"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->yesterday}' AND '{$this->countModel->today}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) newYesterday"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->yesterday}' AND '{$this->countModel->today}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) yesterdayCancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->tomorrow}' AND '{$this->countModel->nextTwoDays}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) tomorrow"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->tomorrow}' AND '{$this->countModel->nextTwoDays}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) newTomorrow"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->tomorrow}' AND '{$this->countModel->nextTwoDays}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) tomorrowCancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->thisWeek}' AND '{$this->countModel->nextWeek}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) this_week"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->thisWeek}' AND '{$this->countModel->nextWeek}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_this_week"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->thisWeek}' AND '{$this->countModel->nextWeek}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) this_week_cancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->nextWeek}' AND '{$this->countModel->twoNextWeek}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) next_week"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->nextWeek}' AND '{$this->countModel->twoNextWeek}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_next_week"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->nextWeek}' AND '{$this->countModel->twoNextWeek}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) next_week_cancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastWeek}' AND '{$this->countModel->thisWeek}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) last_week"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastWeek}' AND '{$this->countModel->thisWeek}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_last_week"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastWeek}' AND '{$this->countModel->thisWeek}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) last_week_cancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->thisMonth}' AND '{$this->countModel->nextMonth}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) this_month"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->thisMonth}' AND '{$this->countModel->nextMonth}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_this_month"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->thisMonth}' AND '{$this->countModel->nextMonth}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) this_month_cancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastMonth}' AND '{$this->countModel->thisMonth}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) last_month"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastMonth}' AND '{$this->countModel->thisMonth}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_last_month"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastMonth}' AND '{$this->countModel->thisMonth}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) last_month_cancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->nextMonth}' AND '{$this->countModel->lastDayOfNextMonth}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) next_month"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->nextMonth}' AND '{$this->countModel->lastDayOfNextMonth}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_next_month"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->nextMonth}' AND '{$this->countModel->lastDayOfNextMonth}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) next_month_cancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->year}' AND '{$this->countModel->nextYear}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) this_year"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->year}' AND '{$this->countModel->nextYear}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_this_year"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->year}' AND '{$this->countModel->nextYear}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) this_year_cancelled"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastYear}' AND '{$this->countModel->year}' AND inspection_type = {$type} then 1 else 0 end) AS UNSIGNED) last_year"),
             DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastYear}' AND '{$this->countModel->year}' AND inspection_type = {$type} AND status_id = 1 then 1 else 0 end) AS UNSIGNED) new_last_year"),
+            DB::raw("CAST(sum(case when date_of_inspection BETWEEN '{$this->countModel->lastYear}' AND '{$this->countModel->year}' AND inspection_type = {$type} AND status_id = " . Counts::CANCELLED . " then 1 else 0 end) AS UNSIGNED) last_year_cancelled"),
             DB::raw("CAST(sum(case when inspection_type = " . Reports::ON_HOLD . " then 1 else 0 end) AS UNSIGNED) on_hold")
         );
         $results = $query->get();

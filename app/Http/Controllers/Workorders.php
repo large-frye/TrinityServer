@@ -47,15 +47,16 @@ class Workorders extends BaseController
     }
 
     /**
-     * @return mixed
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function getCounts(Request $request) {
-        $basic = $this->counts->findCounts(0);
-        $expert = $this->counts->findCounts(1);
         $ladderAssist = $this->counts->findCounts(5);
+        $ladderAssistWithReport = $this->counts->findCounts(0);
+        $expert = $this->counts->findCounts(1);
         $topCounts = $this->counts->findTopCounts($request);
 
-        return response()->json(compact('basic', 'expert', 'ladderAssist', 'topCounts'), 200);
+        return response()->json(compact('ladderAssist', 'ladderAssistWithReport', 'expert', 'topCounts'), 200);
     }
 
     /**

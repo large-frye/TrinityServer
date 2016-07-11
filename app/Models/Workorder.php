@@ -144,9 +144,9 @@ class Workorder extends Model {
             return $workorder;
 
         } catch (QueryException $e) {
-            return response()->json(compact('e'), 500);
+            return response()->json(compact('e'), 200);
         } catch (Exception $e) {
-            return response()->json(compact('e'), 500);
+            return response()->json(compact('e'), 200);
         }
     }
 
