@@ -101,6 +101,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # Resources
     $app->post('/resources/save', 'App\Http\Controllers\Resources@saveResource');
+    $app->post('/resources/upload', 'App\Http\Controllers\Resources@uploadResource');
 });
 
 # Inspector accounts
@@ -122,6 +123,9 @@ $app->group(['prefix' => 'shared', 'middleware' => array('jwt.auth')], function(
     $app->get('/billing/check-lock/{id}', 'App\Http\Controllers\Invoice@checkInspectorLock');
     $app->get('/billing/{start}/{end}', 'App\Http\Controllers\Invoice@getInvoicesByRange');
     $app->get('/billing/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
+
+    # Resources
+    $app->get('/resources', 'App\Http\Controllers\Resources@getResources');
 
     $app->get('/billing/weeks', 'App\Http\Controllers\Invoice@getInvoiceWeeks');
     $app->post('/billing/mileage/save', 'App\Http\Controllers\Invoice@saveMileage');

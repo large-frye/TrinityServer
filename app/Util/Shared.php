@@ -47,6 +47,14 @@ class Shared
             'version' => Shared::VERSION));
     }
 
+    /**
+     * Upload files to S3, should be rename S3Upload
+     * @param $files
+     * @param $input
+     * @param $path
+     * @return array|string
+     * @throws Exception
+     */
     public function upload($files, $input, $path) {
         $urls = [];
 
