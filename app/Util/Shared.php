@@ -126,7 +126,7 @@ class Shared
             foreach ($files as $file) {
                 $info = new \SplFileInfo($file->file_url);
                 $tmpFile = '/tmp/' . Uuid::uuid() . '.' . $info->getExtension();
-                copy($file->file_url, $tmpFile);
+                copy(str_replace(' ', '+', $file->file_url), $tmpFile);
                 array_push($tmpFiles, $tmpFile);
             }
 

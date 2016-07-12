@@ -359,7 +359,7 @@ class Reports extends BaseController {
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
-                    $header = 'New Inspections';
+                    $header = 'In Process Inspections';
                     break;
 
                 case 'process-reschedule':
