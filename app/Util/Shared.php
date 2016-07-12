@@ -131,7 +131,7 @@ class Shared
             }
 
             foreach ($tmpFiles as $tmpFile) {
-                $zip->addFile($tmpFile);
+                $zip->addFile($tmpFile, $tmpFile);
             }
 
             $zip->close();
