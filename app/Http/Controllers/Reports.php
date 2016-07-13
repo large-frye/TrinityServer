@@ -397,7 +397,7 @@ class Reports extends BaseController {
                 case 'post-inspection-date':
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->where('status_id', '=', Reports::SCHEDULED)
-                        ->where('date_of_inspection', '<', date('Y-m-d h:i:s'))
+                        ->where('date_of_inspection', '<', time() * 1000)
                         ->get();
                     $stringFields = array('Customer ID', 'Date of Inspection', 'Inspector', 'Inspection Time',
                         'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
