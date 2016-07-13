@@ -119,6 +119,9 @@ class Workorder extends Model {
                     }
                 }
             }
+            
+            // Log events
+            Logger::log($data);
 
             if (isset($data->id)) {
                 $workorder->exists = true;
@@ -137,9 +140,6 @@ class Workorder extends Model {
             if (!isset($data->id)) {
                 $data->id = $workorder->id;
             }
-
-            // Log events
-            Logger::log($data);
 
             return $workorder;
 
