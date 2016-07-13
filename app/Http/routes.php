@@ -100,6 +100,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->get('/logger/{id}', 'App\Http\Controllers\Logger@getWorkorderLog');
 
     # Resources
+    $app->get('/resources/delete/{id}', 'App\Http\Controllers\Resources@deleteResource');
     $app->post('/resources/save', 'App\Http\Controllers\Resources@saveResource');
     $app->post('/resources/upload', 'App\Http\Controllers\Resources@uploadResource');
 });
@@ -125,7 +126,7 @@ $app->group(['prefix' => 'shared', 'middleware' => array('jwt.auth')], function(
     $app->get('/billing/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
 
     # Resources
-    $app->get('/resources', 'App\Http\Controllers\Resources@getResources');
+    $app->post('/resources', 'App\Http\Controllers\Resources@getResources');
 
     $app->get('/billing/weeks', 'App\Http\Controllers\Invoice@getInvoiceWeeks');
     $app->post('/billing/mileage/save', 'App\Http\Controllers\Invoice@saveMileage');

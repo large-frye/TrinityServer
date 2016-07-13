@@ -20,6 +20,18 @@ class Resource extends Model {
     const FILE = 'file';
     const URL = 'url';
 
+    // Resource types
+    const RESOURCE = 'resource';
+    const TRAINING_MATERIAL = 'trainingMaterial';
+    const TRAINING_VIDEOS = 'trainingVideo';
+    const OTHER = 'other';
+
+    // Path resource names
+    const PATH_RESOURCE = 'resources';
+    const PATH_TRAINING_MATERIALS = 'training-materials';
+    const PATH_TRAINING_VIDEOS = 'training-videos';
+    const PATH_OTHER_RESOURCE = 'other-resources';
+
     /**
      * Save a resource
      * @param $request
@@ -27,21 +39,22 @@ class Resource extends Model {
      */
     public function saveResource($request) {
         try {
-            $resources = $request->resources;
 
-            foreach($resources as $r) {
-                if (isset($r['id'])) {
-                    $resource = Resource::find($r['id']);
-                } else {
-                    $resource = new Resource();
-                }
+            $resource = new Resource();
 
-                // save/update resources
-                $resource->name = $request->name;
-                $resource->item_url = $request->file_url;
-                $resource->item_type = $request->file_type;
-                $resource->save();
+            if ($request->has('id')) {
+                $resource = Resource::find($request->id);
             }
+
+            // save/update resources
+            $resource->name = $request->name;
+            $resource->item_url = $request->item_url;
+            $resource->item_type = $request->item_type;
+            $resource->display_order = $request->has('display_order') ? $request->display_order : 0;
+            $resource->resource_type = $request->resource_type;
+            $resource->save();
+            $resources = Resource::where('resource_type', $request->resource_type)->orderBy('display_order')
+                ->orderBy('created_at')->get();
 
             return response()->json(compact('resources'), 200);
         } catch (ModelNotFoundException $e) {
@@ -51,7 +64,21 @@ class Resource extends Model {
 
     public function uploadResource($request) {
         $shared = new Shared();
-        $path = 'resources';
+
+        switch ($request->resource_type) {
+            case Resource::RESOURCE:
+                $path = Resource::PATH_RESOURCE;
+                break;
+            case Resource::TRAINING_MATERIAL:
+                $path = Resource::PATH_TRAINING_MATERIALS;
+                break;
+            case Resource::TRAINING_VIDEOS:
+                $path = Resource::PATH_TRAINING_VIDEOS;
+                break;
+            case Resource::OTHER:
+                $path = Resource::PATH_OTHER_RESOURCE;
+                break;
+        }
 
         try {
             $urls = $shared->upload($_FILES, $request, $path);
@@ -60,14 +87,27 @@ class Resource extends Model {
                 $resource->name = $filename;
                 $resource->item_url = $url;
                 $resource->item_type = Resource::FILE;
+                $resource->display_order = 0;
+                $resource->resource_type = $request->resource_type;
                 $resource->save();
             }
 
-            $resources = Resource::all();
+            $resources = $this->getResources(array($request->resource_type));
 
             return response()->json(compact('resources'), 200);
         } catch (\Exception $e) {
             return response()->json(compact('e'), 500);
         }
+    }
+
+    public function getResources($resourceTypes) {
+        $types = array();
+
+        foreach ($resourceTypes as $resourceType) {
+            $types[$resourceType] = Resource::where('resource_type', $resourceType)->orderBy('display_order')
+                ->orderBy('created_at')->get();
+        }
+
+        return $types;
     }
 }
