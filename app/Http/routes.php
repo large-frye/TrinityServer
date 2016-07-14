@@ -1,5 +1,7 @@
 <?php
 
+const PREFIX = 'api';
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -19,17 +21,23 @@ $app->get('/generate/{id}', 'Reports@generate');
 $app->get('/settings/categories/create-excel', 'Settings@createExcel');
 
 # Login
-$app->post('api/auth/login', 'Account@signIn');
-$app->get('auth/logout', 'Account@signOut');
 
-# Account
-#$app->post('account/user/sign-in', 'Account@sign_in');
-#$app->post('account/user/create', 'Account@create_user');
-#$app->post('account/user/update', 'Account@update_user');
+$app->group(['prefix' => 'api'], function ($app) {
+
+    # Authentication
+    $app->post('auth/login', 'App\Http\Controllers\Account@signIn');
+    $app->get('auth/logout', 'App\Http\Controllers\Account@signOut');
+
+});
+
+    # Account
+    #$app->post('account/user/sign-in', 'Account@sign_in');
+    #$app->post('account/user/create', 'Account@create_user');
+    #$app->post('account/user/update', 'Account@update_user');
 
 
 # Protected routes
-$app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorization.admin')], function($app) {
+$app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authorization.admin')], function($app) {
     # Workorders
     $app->get('/workorders/time/{time}/{type}', 'App\Http\Controllers\Workorders@getWorkordersByTime');
     $app->get('/workorders/notes/{id}', 'App\Http\Controllers\WorkorderNotes@getNotes');
@@ -107,7 +115,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 });
 
 # Inspector accounts
-$app->group(['prefix' => 'inspector', 'middleware' => array('jwt.auth', 'authorization.inspector')], function($app) {
+$app->group(['prefix' => 'api/inspector', 'middleware' => array('jwt.auth', 'authorization.inspector')], function($app) {
     $app->get('/workorders/{id}', 'App\Http\Controllers\Inspector@getWorkorders');
     $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
     $app->get('/reports/{status}/{id}', 'App\Http\Controllers\Inspector@getReports');
@@ -116,7 +124,7 @@ $app->group(['prefix' => 'inspector', 'middleware' => array('jwt.auth', 'authori
 
 
 # Shared
-$app->group(['prefix' => 'shared', 'middleware' => array('jwt.auth')], function($app) {
+$app->group(['prefix' => 'api/shared', 'middleware' => array('jwt.auth')], function($app) {
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
     $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
 
