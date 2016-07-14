@@ -623,7 +623,7 @@ class Reports extends BaseController {
     public function exportToExcel(Request $request, $type) {
         $data = null;
 
-        if (isset($type) && isset($this->typeToId[$type])) {
+        if (isset($type) && isset($this->typeToId[$type]) && $type != 'all') {
             $reportType = $this->typeToId[$type];
             $data = $this->reportsByStatus($reportType->getId(), null, $reportType->getNegate(), $reportType->getDate());
         } else {
