@@ -19,7 +19,7 @@ $app->get('/generate/{id}', 'Reports@generate');
 $app->get('/settings/categories/create-excel', 'Settings@createExcel');
 
 # Login
-$app->post('auth/login', 'Account@signIn');
+$app->post('api/auth/login', 'Account@signIn');
 $app->get('auth/logout', 'Account@signOut');
 
 # Account
