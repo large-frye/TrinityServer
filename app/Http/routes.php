@@ -41,6 +41,7 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
     $app->post('/workorder/log', 'App\Http\Controllers\Workorders@log');
     $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
     $app->post('/workorder/update', 'App\Http\Controllers\Workorders@update');
+    $app->post('/workorders/notes/delete', 'App\Http\Controllers\WorkorderNotes@deleteNotes');
     $app->post('/workorders/notes/save/{id}', 'App\Http\Controllers\WorkorderNotes@saveNote');
 
     # Reports
