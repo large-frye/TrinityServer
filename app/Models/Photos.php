@@ -132,6 +132,22 @@ class Photos extends Model
         $img->save($photo->tmp_name);
     }
 
+    public function setCategoryPhotoCount($category, $id) {
+        $photoCount = Photos::where('workorder_id', $id)->where('parent_id', $category->id)->count();
+        $category->photo_count = $photoCount;
+    }
+
+    public function setSubCategoryPhotoCount($category, $id) {
+        $photoCount = Photos::where('workorder_id', $id)->where('sub_parent_id', $category->id)->count();
+
+        // TODO: definitely need a better way to get this info, it is a hack right now. Maybe use enums?
+        if ($photoCount == 0) {
+            $photoCount = Photos::where('workorder_id', $id)->where('sub_parent_id', $category->parent_id)->where('label', $category->name)->count();
+        }
+        
+        $category->photo_count = $photoCount;
+    }
+
     public function savePhotos($request) {
         try {
             foreach($request->photos as $photo) {

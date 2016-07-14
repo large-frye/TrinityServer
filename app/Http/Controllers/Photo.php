@@ -33,10 +33,17 @@ class Photo extends BaseController {
         return $this->photoModel->uploadPhoto($request, $id);
     }
 
-    public function getParentCategories(Request $request) {
+    public function getParentCategories($id) {
 
         try {
             $categories = Categories::where('parent_id', 0)->get();
+
+            if ($id != -1) {
+                foreach ($categories as $category) {
+                    $this->photoModel->setCategoryPhotoCount($category, $id);
+                }
+            }
+
             return response()->json(compact('categories'), 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(compact('e'), 500);
@@ -44,9 +51,14 @@ class Photo extends BaseController {
 
     }
 
-    public function getSubCategories(Request $request, $id) {
+    public function getSubCategories($parentId, $workorderId) {
         try {
-            $categories = Categories::where('parent_id', $id)->get();
+            $categories = Categories::where('parent_id', $parentId)->get();
+            if ($workorderId != -1) {
+                foreach ($categories as $category) {
+                    $this->photoModel->setSubCategoryPhotoCount($category, $workorderId);
+                }
+            }
             return response()->json(compact('categories'), 200);
         }
         catch (ModelNotFoundException $e) {

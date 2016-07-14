@@ -78,8 +78,8 @@ $app->group(['prefix' => 'admin', 'middleware' => array('jwt.auth', 'authorizati
 
     # Photos
     $app->get('/photos/zip/{id}', 'App\Http\Controllers\Photo@getZippedFiles');
-    $app->get('/photos/sub-categories/{parentId}', 'App\Http\Controllers\Photo@getSubCategories');
-    $app->get('/photos/parent-categories', 'App\Http\Controllers\Photo@getParentCategories');
+    $app->get('/photos/sub-categories/{parentId}/{workorderId}', 'App\Http\Controllers\Photo@getSubCategories');
+    $app->get('/photos/parent-categories/{id}', 'App\Http\Controllers\Photo@getParentCategories');
     $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
     $app->get('/photos/{workorderId}/{parentId}/{subParentId}/{labelName}', 'App\Http\Controllers\Photo@getLabeledPhotos');
     $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
