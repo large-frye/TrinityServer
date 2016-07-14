@@ -14,7 +14,7 @@ class CorsMiddleware
 
     const ENDPOINT = 'http://52.2.169.5:8000';
     public static $crossOrigin = CorsMiddleware::ENDPOINT;
-    var $fileBase = '/exports';
+    var $fileBase = 'http://52.2.169.5/exports';
 
     public function handle($request, \Closure $next) {
         $response = $next($request);
