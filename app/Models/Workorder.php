@@ -119,16 +119,18 @@ class Workorder extends Model {
                     }
                 }
             }
-            
-            // Log events
-            Logger::log($data);
 
             if (isset($data->id)) {
+                Logger::log($data);
                 $workorder->exists = true;
                 $workorder->save();
             } else {
                 $workorder->status_id = Workorder::NEW_INSPECTION;
                 $workorder->save();
+                $data->id = $workorder->id;
+
+                // workorder doesn't exist, log after save.
+                Logger::log($data);
             }
 
             if (isset($workorder->adjuster_id)) {
