@@ -161,7 +161,7 @@ class Workorder extends Model {
             $order = Workorder::find($id);
             $order->adjuster;
 
-            if (isset($order->adjuster->profile)) {
+            if ($order->adjuster->profile != null) {
                 $order->adjuster->profile;
                 $order->adjuster->rolesUser;
                 if (isset($order->inspector_id) && $order->inspector_id != null) {

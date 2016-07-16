@@ -44,6 +44,7 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
     $app->get('/workorders/{start}/{end}', 'App\Http\Controllers\Workorders@getWorkorders');
     $app->get('/workorder/all', 'App\Http\Controllers\Workorders@all');
     $app->get('/workorder/statuses', 'App\Http\Controllers\Workorders@getStatuses');
+    $app->get('/workorder/inspector-lock/{id}', 'App\Http\Controllers\Workorders@lockInspectorBilling');
     $app->get('/workorder/{id}', 'App\Http\Controllers\Workorders@get');
 
     $app->post('/workorder/log', 'App\Http\Controllers\Workorders@log');
@@ -112,6 +113,7 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
     $app->get('/resources/delete/{id}', 'App\Http\Controllers\Resources@deleteResource');
     $app->post('/resources/save', 'App\Http\Controllers\Resources@saveResource');
     $app->post('/resources/upload', 'App\Http\Controllers\Resources@uploadResource');
+
 });
 
 # Inspector accounts
@@ -139,4 +141,13 @@ $app->group(['prefix' => 'api/shared', 'middleware' => array('jwt.auth')], funct
 
     $app->get('/billing/weeks', 'App\Http\Controllers\Invoice@getInvoiceWeeks');
     $app->post('/billing/mileage/save', 'App\Http\Controllers\Invoice@saveMileage');
+
+    # Alerts
+    $app->post('/workorders/notes/save', 'App\Http\Controllers\WorkorderNotes@saveAlertNote');
+
+    # File
+    $app->get('/files/{id}', 'App\Http\Controllers\WorkorderFile@getWorkorderFiles');
+
+    # File upload
+    $app->post('/files/upload', 'App\Http\Controllers\WorkorderFile@uploadWorkorderFiles');
 });

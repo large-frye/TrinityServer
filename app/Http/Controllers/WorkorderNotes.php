@@ -35,6 +35,10 @@ class WorkorderNotes extends BaseController {
         return $this->notesModel->saveNote($request, $id);
     }
 
+    public function saveAlertNote(Request $request) {
+        return $this->notesModel->saveAlertNote($request);
+    }
+
     public function deleteNotes(Request $request) {
         return $this->notesModel->deleteNotes($request);
     }

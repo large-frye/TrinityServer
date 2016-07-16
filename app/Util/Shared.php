@@ -52,10 +52,11 @@ class Shared
      * @param $files
      * @param $input
      * @param $path
+     * @param $name
      * @return array|string
      * @throws Exception
      */
-    public function upload($files, $input, $path) {
+    public function upload($files, $input, $path, $name = null) {
         $urls = [];
 
         try {
@@ -66,7 +67,8 @@ class Shared
             foreach($this->files as $file => $value) {
                 $this->file = $this->files[$file];
                 $this->error = $this->file['error'];
-                $key = $path . '/' . str_replace('/', '', $this->file['name']);
+                $name = $name === null ? $this->file['name'] : $name;
+                $key = $path . '/' . str_replace('/', '', $name);
 
                 if ($this->error !== 0) {
                     return 'Error uploading file(s)';

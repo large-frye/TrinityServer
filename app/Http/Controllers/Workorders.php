@@ -107,4 +107,27 @@ class Workorders extends BaseController
             ->get();
         return response()->json(compact('statuses'));
     }
+
+    /**
+     * TODO: Needs to be moved to model
+     * @param $id
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function lockInspectorBilling($id) {
+        $workorder = Workorder::find($id);
+        $billingLocked = $workorder->billing_locked;
+
+        switch ($billingLocked) {
+            case null:
+            case 0:
+                $workorder->billing_locked = 1;
+                break;
+            case 1:
+                $workorder->billing_locked = 0;
+                break;
+        }
+
+        $workorder->save();
+        return response()->json(compact('workorder'), 200);
+    }
 }

@@ -53,4 +53,35 @@ class WorkorderNotes extends Model {
             return response()->json(compact('e'), 500);
         }
     }
+
+    public function saveAlertNote($request) {
+
+        try {
+            $alerts = $request->alerts;
+            $workorderId = $request->workorderId;
+            $workorder = Workorder::find($workorderId);
+
+            // Need to set the workorder alert for this $request
+            foreach ($alerts as $key => $bool) {
+                $workorder[$key] = $bool;
+            }
+
+            $workorder->save();
+
+            // Add note text to WorkorderNotes
+            $note = New WorkorderNotes();
+            $note->text = $request->text;
+            $note->username = $request->username;
+            $note->workorder_id = $workorderId;
+            $note->save();
+            $notes = WorkorderNotes::where('workorder_id', $workorderId)->get();
+
+            return response()->json(compact('workorder', 'notes'), 200);
+        } catch (\Exception $e) {
+            return response()->json(compact('e'), 500);
+        }
+
+
+
+    }
 }

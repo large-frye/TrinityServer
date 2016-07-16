@@ -56,6 +56,11 @@ class Reports extends BaseController {
     const INVOICE_ALACRITY = 20;
     const INVOICING = 21;
 
+    // Alert types
+    const ALERT_TO_INSPECTOR = 'alert_to_inspector';
+    const ALERT_OFFICE = 'alert_office';
+    const ALERT_ADMIN = 'alert_admin';
+
     // Attention types
     const ADMIN_ATTN = 'admin';
     const OFFICE_ATTN = 'office';
@@ -315,7 +320,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'inspector-attention-required':
-                    $reports = $this->getReportsByAttType(Reports::INSPECTOR_ATTN, $inspectionType);
+                    $reports = $this->getReportsByAttType(Reports::ALERT_TO_INSPECTOR, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Time of Inspection',  'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
@@ -323,7 +328,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'office-attention-required':
-                    $reports = $this->getReportsByAttType(Reports::OFFICE_ATTN, $inspectionType);
+                    $reports = $this->getReportsByAttType(Reports::ALERT_OFFICE, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
@@ -331,7 +336,7 @@ class Reports extends BaseController {
                     break;
 
                 case 'admin-attention-required':
-                    $reports = $this->getReportsByAttType(Reports::ADMIN_ATTN, $inspectionType);
+                    $reports = $this->getReportsByAttType(Reports::ALERT_ADMIN, $inspectionType);
                     $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
@@ -600,7 +605,7 @@ class Reports extends BaseController {
 
     private function getReportsByAttType($attentionType, $inspectionType) {
         $query = $this->getBaseQuery(false, $inspectionType);
-        $query->where('attention_type', $attentionType);
+        $query->where($attentionType, 1);
         return $query->get();
     }
 
