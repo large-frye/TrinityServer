@@ -21,21 +21,24 @@ class WorkorderFile extends Model {
             $workorderId = $request->workorderId;
             $user = $request->username;
             $type = $request->uploadType;
-            $files = $_FILES;
 
             $shared = new Shared();
             $path = 'inspections/' . $workorderId . '/files';
-            $name = $type . ' - ' . $_FILES['file_0']['name'] . ' by ' . $user;
+            $spl = new \SplFileInfo($_FILES['file_0']['name']);
+            $fileExt = $spl->getExtension();
+            $fileName = $request->files3Name . '.' . $fileExt;
+            $displayName = $type . ' - ' . $_FILES['file_0']['name'];
 
             // upload
-            $urls = $shared->upload($_FILES, $request, $path, $name);
+            $urls = $shared->upload($_FILES, $request, $path, $fileName);
 
             // add file info to db
             $workorderFile = new WorkorderFile();
             $workorderFile->workorder_id = $workorderId;
             $workorderFile->file_url = $urls['file_0'];
             $workorderFile->file_type = $type;
-            $workorderFile->name = $name;
+            $workorderFile->display_name = $displayName;
+            $workorderFile->update_by = $user;
             $workorderFile->save();
 
             $workorderFiles = WorkorderFile::where('workorder_id', $workorderId)->get();
