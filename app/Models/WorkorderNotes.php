@@ -8,12 +8,20 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\Reports;
 use Illuminate\Database\Eloquent\Model;
 use League\Flysystem\Exception;
 
 class WorkorderNotes extends Model {
     protected $table = 'workorder_notes';
     protected $fillable = ['id', 'created_at', 'updated_at', 'text', 'user_id', 'workorder_id'];
+
+    protected $alerts = array(
+        Reports::ALERT_TO_INSPECTOR => 'ALERT TO INSPECTOR: ',
+        Reports::ALERT_ADMIN, 'ALERT ADMIN: ',
+        Reports::ALERT_OFFICE, 'ALERT OFFICE: ',
+        'alert_from_inspector', 'ALERT FROM INSPECTOR: ' // TODO: make constant
+    );
 
     public function saveNote($request, $id) {
         try {
@@ -70,7 +78,7 @@ class WorkorderNotes extends Model {
 
             // Add note text to WorkorderNotes
             $note = New WorkorderNotes();
-            $note->text = $request->text;
+            $note->text = 'ALERT: ' . $request->text;
             $note->username = $request->username;
             $note->workorder_id = $workorderId;
             $note->save();
