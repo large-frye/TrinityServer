@@ -73,11 +73,15 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
     $app->get('/workorders/getTopCounts', 'App\Http\Controllers\Workorders@getTopCounts');
 
     # Clients
+    $app->get('/users', 'App\Http\Controllers\Account@getUsers');
+    $app->get('/user/{id}', 'App\Http\Controllers\Account@getUser');
     $app->get('/users/insured/{id}', 'App\Http\Controllers\Account@getInsuredProfile');
+    $app->get('/users/delete/{id}', 'App\Http\Controllers\Account@deleteUser');
 
     # User
     $app->post('/users/create', 'App\Http\Controllers\Account@create_user');
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
+
 
     # Billing
     $app->get('/billing/lock/{id}', 'App\Http\Controllers\Invoice@changeInspectorMileLockState');

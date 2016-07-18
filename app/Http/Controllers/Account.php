@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Profile;
 use App\Models\RolesUser;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -23,6 +24,7 @@ use App\Models\WorkOrders;
 use App\Models\Counts;
 use Illuminate\Support\Facades\Mail;
 use App\User;
+use DB;
 
 class Account extends BaseController {
 
@@ -51,26 +53,34 @@ class Account extends BaseController {
 
             try {
                 $user = new \App\User();
-                $user->name = $request->name;
+                $user->name = $request->email;
                 $user->email = $request->email;
                 $user->password = password_hash($request->password, PASSWORD_BCRYPT);
 
                 if ($user->save()) {
-                    $data = array('name' => 'Andrew');
 
 //                Mail::send('createuser', $data, function($msg) use ($request) {
 //                    $msg->to([$request->email]);
 //                    $msg->subject('New Account on trinity.is');
 //                });
 
-                    if (isset($request->userType)) {
+                    if ($request->has('roles_user')) {
                         $roleUser = new RolesUser();
                         $roleUser->user_id = $user->id;
-                        $roleUser->role_id = $request->userType;
+                        $roleUser->role_id = $request->roles_user[0]['role_id'];
                         $roleUser->save();
                     }
 
-                    return response()->json(compact('user'));
+                    if ($request->has('profile')) {
+                        $profile = new Profile();
+                        $profile->user_id = $user->id;
+                        foreach ($request->profile as $key => $value) {
+                            $profile[$key] = $value;
+                        }
+                        $profile->save();
+                    }
+
+                    return response()->json(compact('user'), 200);
                 } else {
                     return response()->json(['error' => 'could not save user'], 500);
                 }
@@ -171,6 +181,7 @@ class Account extends BaseController {
 
             $user = User::where('email', $request->email)->firstOrFail();
             $user->email = $request->email;
+            $user->save();
 
             if ($request->has('profile')) {
                 $profile = $request->profile;
@@ -181,14 +192,15 @@ class Account extends BaseController {
             }
 
             if ($request->has('roles_user')) {
-                $user->rolesUser[0]->role_id = $request->roles_user[0]['role_id'];
-                $user->rolesUser[0]->save();
+                DB::table('roles_user')->where('user_id', $request->id)->update(array('role_id' => $request->roles_user[0]['role_id']));
             }
 
-            $user->save();
-
         } catch (ModelNotFoundException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            if ($e->getMessage() == 'No query results for model [App\User].') {
+                $this->create_user($request);
+            } else {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
         }
     }
 
@@ -207,6 +219,20 @@ class Account extends BaseController {
         return response()->json(compact('user'), 200);
     }
 
+    public function deleteUser($id) {
+        $user = User::find($id);
+
+        // delete profile
+        $profile = Profile::where('user_id', $id)->delete();
+
+        // delete roles_user
+        $rolesUser = RolesUser::where('user_id', $id)->delete();;
+
+        $user->delete();
+        $users = User::all();
+        return response()->json(compact('users'), 200);
+    }
+
     public function getAdjusters($type) {
         return $this->user->findAdjusters(User::CLIENT);
     }
@@ -217,5 +243,18 @@ class Account extends BaseController {
 
     public function getInsuredProfile($id) {
         return $this->user->findInsuredProfile($id);
+    }
+
+    public function getUsers() {
+        $users = User::all();
+        return response()->json(compact('users'), 200);
+    }
+
+    public function getUser($id) {
+        $user = User::find($id);
+        $user->profile;
+        $user->rolesUser;
+
+        return response()->json(compact('user'), 200);
     }
 }
