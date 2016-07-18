@@ -165,15 +165,46 @@ class Account extends BaseController {
             \App\User::where('email', $request->email)->firstOrFail();
             unset($input['query_string']);
 
-            if ($input['password']) {
+            if ($request->has('password')) {
                 $input['password'] = password_hash($input['password'], PASSWORD_BCRYPT);
             }
 
-            \App\User::where('email', '=', $request->email) ->update($input);
+            $user = User::where('email', $request->email)->firstOrFail();
+            $user->email = $request->email;
+
+            if ($request->has('profile')) {
+                $profile = $request->profile;
+                foreach ($profile as $key => $value) {
+                    $user->profile[$key] = $value;
+                }
+                $user->profile->save();
+            }
+
+            if ($request->has('roles_user')) {
+                $user->rolesUser[0]->role_id = $request->roles_user[0]['role_id'];
+                $user->rolesUser[0]->save();
+            }
+
+            $user->save();
 
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function updatePassword(Request $request) {
+        // Get current password make sure they match.
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $password = $request->currentPassword;
+        if (!password_verify($password, $user->password)) {
+            return response()->json(['password_mismatch' => 'Current password is incorrect.'], 500);
+        }
+
+        $user = \App\User::where('password', $user->password)->firstOrFail();
+        $user->password = password_hash($request->newPassword, PASSWORD_BCRYPT);
+        $user->save();
+        return response()->json(compact('user'), 200);
     }
 
     public function getAdjusters($type) {

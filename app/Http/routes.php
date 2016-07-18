@@ -150,4 +150,8 @@ $app->group(['prefix' => 'api/shared', 'middleware' => array('jwt.auth')], funct
 
     # File upload
     $app->post('/files/upload', 'App\Http\Controllers\WorkorderFile@uploadWorkorderFiles');
+
+    # Profile
+    $app->post('/profile/save', 'App\Http\Controllers\Account@update_user');
+    $app->post('/password/save', 'App\Http\Controllers\Account@updatePassword');
 });
