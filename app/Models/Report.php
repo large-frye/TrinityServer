@@ -33,6 +33,8 @@ class Report {
         $finalName = '/reports/' . $id . '_final.pdf';
         $dockerBase = $request->session()->get('dockerBase');
 
+        echo exec('whoami');
+
         // unlink old files
         $this->unlinkFiles(array($cwd . $reportName, $cwd . $photoName, $cwd . $finalName));
 
