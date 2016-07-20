@@ -26,11 +26,17 @@ class Report {
             use a 10’ X 10’ test square on all 4 directional slopes to test the statistical average of hail.'
     ];
 
-    public function generate($html, $photosHtml, $id) {
-        $reportName = $id . '_' . 'report.pdf';
-        $photoName = $id . '_' . 'photos.pdf';
-        $finalName = $id . '_final.pdf';
+    public function generate($html, $photosHtml, $id, $request) {
+        $cwd = getcwd();
+        $reportName = '/reports/' . $id . '_' . 'report.pdf';
+        $photoName = '/reports/' . $id . '_' . 'photos.pdf';
+        $finalName = '/reports/' . $id . '_final.pdf';
+        $dockerBase = $request->session()->get('dockerBase');
 
+        // unlink old files
+        $this->unlinkFiles(array($cwd . $reportName, $cwd . $photoName, $cwd . $finalName));
+
+        // report overview
         $reportPdf = App::make('dompdf.wrapper');
         $reportPdf->loadHTML($html);
         $reportOutput = $reportPdf->output();
@@ -46,16 +52,26 @@ class Report {
         $photosPdf->loadHTML($photosHtml);
         $photosOutput = $photosPdf->output();
 
-        file_put_contents($reportName, $reportOutput);
-        file_put_contents($photoName, $photosOutput);
+        file_put_contents($cwd . $reportName, $reportOutput);
+        file_put_contents($cwd . $photoName, $photosOutput);
+        file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
+            'pdftk ' . $reportName . ' ' . $photoName . ' cat output ' . $finalName . "\n" .
+            'chmod 777 ' . $finalName);
 
-        exec('pdftk ' . $reportName . ' ' . $photoName . ' ' . ' cat output ' . $finalName);
-
-        unlink($reportName);
-        unlink($photoName);
+        // Run our docker-compose
+        exec('cd ' . $dockerBase . ' && pwd && ./run.sh 2>&1', $output);
 
         $shared = new Shared();
-        return $shared->uploadLocalFile($finalName, 'inspections/' . $id . '/reports', $finalName);
+        $url = $shared->uploadLocalFile($cwd . $finalName, 'inspections/' . $id, $finalName);
+        return $url;
+    }
+
+    private function unlinkFiles($files) {
+        foreach($files as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
+        }
     }
 
     public function getMetaData($id) {

@@ -15,6 +15,7 @@ class CorsMiddleware
     const ENDPOINT = 'http://52.2.169.5:8000';
     public static $crossOrigin = CorsMiddleware::ENDPOINT;
     var $fileBase = 'http://52.2.169.5/exports';
+    var $dockerBase = '/usr/share/nginx/html/trinity-server/resources/docker';
 
     public function handle($request, \Closure $next) {
         $response = $next($request);
@@ -25,9 +26,11 @@ class CorsMiddleware
         if (count($matches) > 0) {
             CorsMiddleware::$crossOrigin = 'http://localhost:8000';
             $this->fileBase = 'storage';
+            $this->dockerBase = '/php/TrinityServer/resources/docker';
         }
 
         $request->session()->put('fileBase', $this->fileBase);
+        $request->session()->put('dockerBase', $this->dockerBase);
         $request->session()->save();
 
         $response->header('Access-Control-Allow-Methods', '*');

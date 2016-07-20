@@ -113,13 +113,13 @@ class Reports extends BaseController {
      * @param $id
      * @return mixed
      */
-    public function generate($id) {
+    public function generate(Request $request, $id) {
         $meta = $this->reportModel->getMetaData($id);
         $data = $this->reportModel->getInspection($id);
         $photos = $this->reportModel->getPhotos(($id));
         $html = view('basic-report', ['meta' => $meta, 'inspection' => $data[0]]);
         $photosHtml = view('photos', ['photos' => $photos]);
-        $pdfUrl = $this->reportModel->generate($html, $photosHtml, $id);
+        $pdfUrl = $this->reportModel->generate($html, $photosHtml, $id, $request);
         return response()->json(array('pdfUrl' => $pdfUrl), 200);
     }
 
