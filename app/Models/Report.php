@@ -8,17 +8,54 @@
 
 namespace App\Models;
 
+use App\Util\Shared;
 use Barryvdh\DomPDF;
 use Illuminate\Support\Facades\App;
 use DB;
 
 
-class Report
-{
-    public function generate($html) {
-        $pdf = App::make('dompdf.wrapper');;
-        $pdf->loadHTML($html);
-        return $pdf->stream();
+class Report {
+
+    protected static $damageDescriptions = [
+        'wind_damage' => 'Our wind damage inspection consists of inspecting every roof slope to verify any and all wind 
+            damaged components to alltypes of roofing systems',
+        'hail_damage' => 'Our hail damage inspection consists of looking on all directional slopes for granular 
+            displacement on the shingles that are
+            about the size in diameter of a dime, which may or may not be supported by mat fracture. These areas of granular
+            displacement must be across the entire directional slope that we are assessing (which is a characteristic of hail damage). We
+            use a 10’ X 10’ test square on all 4 directional slopes to test the statistical average of hail.'
+    ];
+
+    public function generate($html, $photosHtml, $id) {
+        $reportName = $id . '_' . 'report.pdf';
+        $photoName = $id . '_' . 'photos.pdf';
+        $finalName = $id . '_final.pdf';
+
+        $reportPdf = App::make('dompdf.wrapper');
+        $reportPdf->loadHTML($html);
+        $reportOutput = $reportPdf->output();
+
+        // sketch pdf
+//        $photosPdf = App::make('dompdf.wrapper');
+//        $photosPdf->setPaper('A4', 'landscape');
+//        $photosPdf->loadHTML('<p>test</p>');
+//        $photosOutput = $photosPdf->output();
+
+        // photos pdf
+        $photosPdf = App::make('dompdf.wrapper');
+        $photosPdf->loadHTML($photosHtml);
+        $photosOutput = $photosPdf->output();
+
+        file_put_contents($reportName, $reportOutput);
+        file_put_contents($photoName, $photosOutput);
+
+        exec('pdftk ' . $reportName . ' ' . $photoName . ' ' . ' cat output ' . $finalName);
+
+        unlink($reportName);
+        unlink($photoName);
+
+        $shared = new Shared();
+        return $shared->uploadLocalFile($finalName, 'inspections/' . $id . '/reports', $finalName);
     }
 
     public function getMetaData($id) {
@@ -33,10 +70,26 @@ class Report
         return $meta;
     }
 
+    public function getPhotos($id) {
+        $data = DB::table('photos as p')
+            ->select('p.file_name', 'p.label', 'p.file_url', 'p.display_order', 'c1.display_order as c1_order',
+                'c1.id as c1_id', 'c2.id as c2_id', 'c1.name as c1_name', 'c2.display_order as c2_order',
+                'c2.name as c2_name')
+            ->leftJoin('categories as c1', 'c1.id', '=', 'p.parent_id')
+            ->leftJoin('categories as c2', 'c2.id', '=', 'p.sub_parent_id')
+            ->where('workorder_id', $id)
+            ->orderBy('c1_order')
+            ->orderBy('c2_order')
+            ->orderBy('display_order')
+            ->get();
+
+        return $data;
+    }
+
     public function getInspection($id) {
         $data = DB::table('work_order')
             ->select(DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'),
-                'address',
+                'work_order.address',
                 DB::raw('CONCAT(work_order.city, "/", work_order.state, "/", work_order.zip_code) as addressLine2'),
                 'policy_num', 'date_of_inspection', 'user.name as adjuster', 'user_profiles.insurance_company as insurance_company')
             ->leftJoin('user', 'user.id', '=', 'work_order.adjuster_id')
@@ -48,5 +101,7 @@ class Report
         $data[0]->date_of_inspection = date('Y-m-d h:i:s', $time);
         return $data;
     }
+
+
 
 }

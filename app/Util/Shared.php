@@ -97,6 +97,29 @@ class Shared
         }
     }
 
+    public function uploadLocalFile($file, $path, $name = null) {
+        try {
+            $name = $name === null ? $file : $name;
+            $key = $path . '/' . str_replace('/', '', $name);
+            Shared::createS3Client()->putObject(array(
+                'ACL' => $this->acl->getPublic(),
+                'Bucket' => Shared::BUCKET,
+                'Key' => $key,
+                'SourceFile' => $file
+            ));
+
+            $url = 'https://s3.amazonaws.com/trinity-content/' . $key;
+
+            return $url;
+        } catch (S3Exception $e) {
+            throw new Exception($e->getMessage());
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
     public static function remove($key) {
         try {
             Shared::createS3Client()->deleteObject(array(

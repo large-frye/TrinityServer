@@ -7,7 +7,7 @@
             margin:0px; padding:0; margin-top: 10px;
         }
         body{
-            font:14px Georgia, serif;
+            font:12px Georgia, serif;
             line-height: 24px;
         }
         #page-wrap{
@@ -58,11 +58,15 @@
             font:14px;
         }
         .damageLi{
-            font:15px;
+            font-size: 15px;
+            list-style-type: none;
+            margin: 0em;
+            padding: 0em;
         }
         .damageUL{
             position:relative;
             left:2em;
+            list-style: none;
         }
         .redTxt{
             color: red ;
@@ -104,8 +108,7 @@
 
 <div id="page-wrap">
     <div class="top-bar">
-<!--        <img src="--><?php //echo $_SERVER['DOCUMENT_ROOT'] . '/assets/gfx/logo-icon.png';?><!--" width="100" height="100" alt="test" style="text-align:center;">-->
-        <table style="margin-top: -75px">
+        <table>
             <tr><th class="header">Trinity Inspections, LLC</th></tr>
             <tr><td class="center">P.O. Box 938</td></tr>
             <tr><td class="center">Locust, NC 28097</td></tr>
@@ -124,108 +127,101 @@
         <tr><th>Date:</th><td class="border">&nbsp;<?php echo $inspection->date_of_inspection;?></td></tr>
     </table>
 
-<!--    <div class="ground-inspection"> <!-- Don't really like using position:absolute -->-->
-<!--        <h4 class="row-header">GROUND INSPECTION</h4>-->
-<!--        <p>During our ground level walk around inspection of the loss <span class="blue">-->
-<?php //echo isset($meta->collateral_damages_array) ? "we did find collateral damage" : "we did not find collateral damage";?><!--</span>-->
-<!--            to the following building materials that may be more susceptible to wind or hail.</p>-->
-<!--        <p class="blue">--><?php //echo isset($collateral_damages) && !empty($collateral_damages) ? implode(', ', $collateral_damages) : null;?><!--</p>-->
-<!--        --><?php //if (isset($report_data['damages']['collateral_damamges_comments']) && trim($report_data['damages']['collateral_damamges_comments']) != "") {
-//            echo "<h4>Collateral Damages Comments: </h4><p>" . $report_data['damages']['collateral_damamges_comments'] . "</p>";
-//        }
-//        ?>
-<!--        <br>-->
-<!--        <h4 class="row-header">ROOF INSPECTION</h4>-->
-<!--        --><?php
-//        $windTotal = 0;
-//        $hailTotal = 0;
-//        foreach ($report_data['damages'] as $damage => $damages) {
-//            if (preg_match('/header/', $damage) && !preg_match('/collateral/', $damage)) {
-//                ?>
-<!--                <h5 class="red">--><?php //echo strtoupper(str_replace('_header', '', $damage . ' damage:'));
-//                    if (preg_match('/wind/', $damage)) {
-//                        echo '<p class="sectionDescrip">Our wind damage inspection consists of inspecting every roof slope to verify any and all wind damaged components to all types of
-//roofing systems.</p>';
-//                    } elseif (preg_match('/hail/', $damage)) {
-//                        echo '<p class="sectionDescrip">Our hail damage inspection consists of looking on all directional slopes for granular displacement on the shingles that are about the
-//                  size in diameter of a dime, which may or may not be supported by mat fracture. These areas of granular displacement must be across the entire directional
-//                  slope that we are assessing (which is a characteristic of hail damage). We use a 10’ X 10’ test square on all 4 directional slopes to test
-//                  the statistical average of hail.</p>';
-//                    }
-//                    ?><!--</h5>-->
-<!--                <div class="damageUL">-->
-<!--                    <ul>-->
-<!--                        --><?php
-//                        $directions = array("North", "South", "East", "West", "(Front)", "(Rear)", "(Left)", "(Right)", "NorthEast", "SouthEast", "SouthWest", "NorthWest");
-//                        foreach ($damages as $tmp) {
-//                            $finalStr = '';
-//                            if (is_array($tmp)) {
-//                                foreach ($tmp as $key => $value) {
-//                                    foreach (explode(' ', $value) as $opt) {
-//                                        if (preg_match('/[0-9]+/', $opt)) {
-//                                            if (preg_match('/wind/', $damage)) {
-//                                                $windTotal = $windTotal + $opt;
-//                                            } else if (preg_match('/hail/', $damage)) {
-//                                                $hailTotal = $hailTotal + $opt;
-//                                            }
-//                                            $finalStr .= " <span style=\"color:red\">" . $opt . "</span>";
-//                                        } else {
-//                                            $finalStr .= " " . $opt;
-//                                        }
-//                                    }
-//                                    $finalStr .= "<br />";
-//                                }
-//                            } else {
-//                                foreach (explode(' ', $tmp) as $st) {
-//                                    if (is_numeric($st)) {
-//                                        if (preg_match('/wind/', $damage)) {
-//                                            $windTotal = $windTotal + $st;
-//                                        } else if (preg_match('/hail/', $damage)) {
-//                                            $hailTotal = $hailTotal + $st;
-//                                        }
-//                                        $finalStr = $finalStr . ' <span class="redTxt">' . $st . '</span>';
-//                                    } else {
-//                                        $finalStr = $finalStr . ' ' . $st;
-//                                    }
-//                                }
-//                            }
-//                            $tmp = $finalStr;
-//                            foreach ($directions as $value) {
-//                                $tmp = str_replace($value, '<span class="redTxt">' . $value . '</span>', $tmp);
-//                            }
-//                            if (preg_match('/hail-damaged shingles/', $tmp)) {
-//                                $tmp = str_replace('hail-damaged shingles', 'hail-damaged shingles per test square', $tmp);
-//                            }
-//                            ?>
-<!--                            <li class="damageLi">--><?php //echo $tmp;?><!--</li>-->
-<!--                            --><?php
-//                        }?>
-<!--                    </ul>-->
-<!--                </div>-->
-<!---->
-<!--            --><?php //}
-//        }?>
-<!--    </div>-->
-<!---->
-<!--    <!-- General Comments -->-->
-<!--    <div class="ground-inspection">-->
-<!--        <h4 class="row-header">INSPECTION SUMMARY</h4>-->
-<!--        <p>-->
-<!--            --><?php
-//            if (isset($meta->general_comments)) {
-//                if (trim($meta->general_comments) == null || trim($meta->general_comments) == "") {
-//                    echo "There were no comments left about this report.";
-//                } else {
-//                    echo "&nbsp;" . $meta->general_comments;
-//                }
-//            } else {
-//                echo "No comments.";
-//            }
-//            ?>
-<!--        </p>-->
-<!--    </div>-->
-<!---->
-<!--    <div class="padding-top"></div>-->
-    <br><br><br>
+    <div class="ground-inspection">
+        <h4 class="row-header">GROUND INSPECTION</h4>
+        <p>During our ground level walk around inspection of the loss<span class="blue">
+        <?php echo isset($meta->collateral_damages_array) ? "we did find collateral damage" : "we did not find collateral damage";?></span>
+            to the following building materials that may be more susceptible to wind or hail.</p>
+        <p class="blue"><?php echo isset($meta->collateral_damages_array) ? str_replace(',', ', ', $meta->collateral_damages_array) : null;?></p>
+        <?php if (isset($meta->collateral_damages_comments)) {
+            echo "<h4>Collateral Damages Comments: </h4><p>" . $meta->collateral_damages_comments . "</p>";
+        } ?>
+
+        <h4 class="row-header">ROOF INSPECTION</h4>
+
+        <!-- Wind damage -->
+        <h5 class="red">WIND DAMAGE:</h5>
+        <p class="sectionDescrip">Our wind damage inspection consists of inspecting every roof slope to verify any and
+            all wind damaged components to all types of roofing systems.</p>
+        <?php
+
+            if (isset($meta->north_wind_damaged) || isset($meta->south_wind_damaged) || isset($meta->east_wind_damaged)
+            || isset($meta->west_wind_damaged)) {
+                $output = '<ul class="damageUL">';
+                $damages = ['North (Front)' => isset($meta->north_wind_damaged) ? $meta->north_wind_damaged : false,
+                    'South (Rear)' => isset($meta->south_wind_damaged) ? $meta->south_wind_damaged : false,
+                    'East (Right)' => isset($meta->east_wind_damaged) ? $meta->east_wind_damaged : false,
+                    'West (Left)' => isset($meta->west_wind_damaged) ? $meta->west_wind_damaged : false
+                ];
+                foreach ($damages as $label => $value) {
+                    if ($value) {
+                        $li = '<li class="damageLi">During our inspection of the <span class="redTxt">' . $label . '</span> facing scope 
+                            we found <span class="red">' . $value . ' </span> wind-damaged shingles.</li>';
+                        $output .= $li;
+                    }
+                }
+
+                $output .= '</ul>';
+                echo $output;
+            } else {
+                echo '<p>There was no wind damage found during our inspection.</p>';
+            }
+
+        ?>
+        <!-- End wind damage -->
+
+        <!-- Metal damage -->
+        <?php
+            if (isset($meta->metal_damages_array )|| isset($meta->metal_damage_hail_size) ||
+                isset($meta->metal_damage_comments)) {
+                echo '<h5 class="red">METAL DAMAGE:</h5>' .
+                    '<p>We also found cosmetic denting to the thin gauge aluminum vents on the roof: ' . $meta->metal_damages_array . '</p>';
+                ;
+            }
+        ?>
+        <!-- End Metal damage -->
+
+        <!-- Hail damage -->
+        <h5 class="red">HAIL DAMAGE:</h5>
+        <p class="sectionDescrip">Our hail damage inspection consists of looking on all directional slopes for granular
+            displacement on the shingles that are about the size in diameter of a dime, which may or may not be supported
+            by mat fracture. These areas of granular displacement must be across the entire directional slope that we
+            are assessing (which is a characteristic of hail damage). We use a 10’ X 10’ test square on all 4
+            directional slopes to test the statistical average of hail.
+        </p>
+        <?php
+
+            if (isset($meta->hail_north_damaged) || isset($meta->hail_south_damaged) || isset($meta->hail_east_damaged)
+                || isset($meta->hail_west_damaged)) {
+                $output = '<ul class="damageUL">';
+                $damages = ['North (Front)' => isset($meta->hail_north_damaged) ? $meta->hail_north_damaged : false,
+                    'South (Rear)' => isset($meta->hail_south_damaged) ? $meta->hail_south_damaged : false,
+                    'East (Right)' => isset($meta->hail_east_damaged) ? $meta->hail_east_damaged : false,
+                    'West (Left)' => isset($meta->hail_west_damaged) ? $meta->hail_west_damaged : false
+                ];
+                foreach ($damages as $label => $value) {
+                    if ($value) {
+                        $li = '<li class="damageLi">During our inspection of the <span class="redTxt">' . $label . '</span> facing scope 
+                                we found <span class="red">' . $value . ' </span> hail-damaged shingles.</li>';
+                        $output .= $li;
+                    }
+                }
+
+                $output .= '</ul>';
+                echo $output;
+            } else {
+                echo '<p>There was no hail damage found during our inspection.</p>';
+            }
+
+        ?>
+        <!-- End hail damage -->
+
+        <!-- Inspection Summary -->
+        <h4 class="row-header">INSPECTION SUMMARY</h4>
+        <!-- TODO: Add general comments -->
+        <!-- Inspection Summary -->
+
+    </div>
+</div>
 </body>
 </html>

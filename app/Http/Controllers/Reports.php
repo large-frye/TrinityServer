@@ -91,7 +91,7 @@ class Reports extends BaseController {
             'reporting' => ReportType::createReport(Reports::REPORTING, 'reporting' , false),
             'inv-alacrity' => ReportType::createReport(Reports::INVOICE_ALACRITY, 'inv-alacrity', false),
             'invoicing' => ReportType::createReport(Reports::INVOICING, 'invoicing', false),
-            'closed' => ReportType::createReport(Reports::CLOSED, 'closed', false),
+            'closed' => ReportType::createReport(Reports::CLOSED, 'closed', false), 
             'cancelled' => ReportType::createReport(Reports::CANCELLED, 'cancelled' , false),
             'cancelled-closed' => ReportType::createReport(Reports::CLOSED_CANCELLED, 'cancelled-closed', false),
             'today' => ReportType::createReport(null, 'today', false, [$this->countModel->today, $this->countModel->tomorrow]),
@@ -108,11 +108,19 @@ class Reports extends BaseController {
         );
     }
 
+    /**
+     * Generate a pdf report
+     * @param $id
+     * @return mixed
+     */
     public function generate($id) {
         $meta = $this->reportModel->getMetaData($id);
         $data = $this->reportModel->getInspection($id);
+        $photos = $this->reportModel->getPhotos(($id));
         $html = view('basic-report', ['meta' => $meta, 'inspection' => $data[0]]);
-        return $this->reportModel->generate($html);
+        $photosHtml = view('photos', ['photos' => $photos]);
+        $pdfUrl = $this->reportModel->generate($html, $photosHtml, $id);
+        return response()->json(array('pdfUrl' => $pdfUrl), 200);
     }
 
     public function get() {
