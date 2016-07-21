@@ -145,13 +145,13 @@
             all wind damaged components to all types of roofing systems.</p>
         <?php
 
-            if (isset($meta->north_wind_damaged) || isset($meta->south_wind_damaged) || isset($meta->east_wind_damaged)
-            || isset($meta->west_wind_damaged)) {
+            if (isset($meta->wind_front_shingles_damaged) || isset($meta->wind_rear_shingles_damaged) || isset($meta->wind_left_shingles_damaged)
+            || isset($meta->wind_right_shingles_damaged)) {
                 $output = '<ul class="damageUL">';
-                $damages = ['North (Front)' => isset($meta->north_wind_damaged) ? $meta->north_wind_damaged : false,
-                    'South (Rear)' => isset($meta->south_wind_damaged) ? $meta->south_wind_damaged : false,
-                    'East (Right)' => isset($meta->east_wind_damaged) ? $meta->east_wind_damaged : false,
-                    'West (Left)' => isset($meta->west_wind_damaged) ? $meta->west_wind_damaged : false
+                $damages = ['North (Front)' => isset($meta->wind_front_shingles_damaged) ? $meta->wind_front_shingles_damaged : false,
+                    'South (Rear)' => isset($meta->wind_rear_shingles_damaged) ? $meta->wind_rear_shingles_damaged : false,
+                    'East (Right)' => isset($meta->wind_right_shingles_damaged) ? $meta->wind_right_shingles_damaged : false,
+                    'West (Left)' => isset($meta->wind_left_shingles_damaged) ? $meta->wind_left_shingles_damaged : false
                 ];
                 foreach ($damages as $label => $value) {
                     if ($value) {
@@ -191,13 +191,13 @@
         </p>
         <?php
 
-            if (isset($meta->hail_north_damaged) || isset($meta->hail_south_damaged) || isset($meta->hail_east_damaged)
-                || isset($meta->hail_west_damaged)) {
+            if (isset($meta->hail_front_shingles_damaged) || isset($meta->hail_rear_shingles_damaged) || isset($meta->hail_left_shingles_damaged)
+                || isset($meta->hail_right_shingles_damaged)) {
                 $output = '<ul class="damageUL">';
-                $damages = ['North (Front)' => isset($meta->hail_north_damaged) ? $meta->hail_north_damaged : false,
-                    'South (Rear)' => isset($meta->hail_south_damaged) ? $meta->hail_south_damaged : false,
-                    'East (Right)' => isset($meta->hail_east_damaged) ? $meta->hail_east_damaged : false,
-                    'West (Left)' => isset($meta->hail_west_damaged) ? $meta->hail_west_damaged : false
+                $damages = ['North (Front)' => isset($meta->hail_front_shingles_damaged) ? $meta->hail_front_shingles_damaged : false,
+                    'South (Rear)' => isset($meta->hail_rear_shingles_damaged) ? $meta->hail_rear_shingles_damaged : false,
+                    'East (Right)' => isset($meta->hail_right_shingles_damaged) ? $meta->hail_right_shingles_damaged : false,
+                    'West (Left)' => isset($meta->hail_left_shingles_damaged) ? $meta->hail_left_shingles_damaged : false
                 ];
                 foreach ($damages as $label => $value) {
                     if ($value) {
@@ -218,7 +218,11 @@
 
         <!-- Inspection Summary -->
         <h4 class="row-header">INSPECTION SUMMARY</h4>
-        <!-- TODO: Add general comments -->
+        <?php
+            if (isset($meta->general_comments)) {
+                echo '<p>' . $meta->general_comments . '</p>';
+            }
+        ?>
         <!-- Inspection Summary -->
 
     </div>

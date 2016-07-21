@@ -13,6 +13,7 @@ use App\Models\Count;
 use App\Models\Field;
 use App\Models\Report;
 use App\Models\ReportType;
+use App\Models\WorkorderFile;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Input;
 use Laravel\Lumen\Routing\Controller as BaseController;
@@ -66,6 +67,10 @@ class Reports extends BaseController {
     const OFFICE_ATTN = 'office';
     const INSPECTOR_ATTN = 'inspector';
 
+    // Report types
+    const EXPERT = 'expert';
+    const LADDER_ASSIST_WITH_REPORT = 'ladder_assist_with_report';
+
     public function __construct() {
         $this->workorder = new Workorder();
         $this->reportModel = new Report();
@@ -117,9 +122,28 @@ class Reports extends BaseController {
         $meta = $this->reportModel->getMetaData($id);
         $data = $this->reportModel->getInspection($id);
         $photos = $this->reportModel->getPhotos(($id));
-        $html = view('basic-report', ['meta' => $meta, 'inspection' => $data[0]]);
-        $photosHtml = view('photos', ['photos' => $photos]);
-        $pdfUrl = $this->reportModel->generate($html, $photosHtml, $id, $request);
+        $sketch = WorkorderFile::where('workorder_id', $id)->where('file_type', 'sketch')->get();
+        $type = $data[0]->inspection_outcome == '9' ? Reports::EXPERT : Reports::LADDER_ASSIST_WITH_REPORT;
+
+        $explanations = false;
+
+        if ($type === Reports::EXPERT) {
+            $html = view('expert-report', ['meta' => $meta, 'inspection' => $data[0]])->render();
+
+            // create explanations here.
+
+        } else {
+            $html = view('basic-report', ['meta' => $meta, 'inspection' => $data[0]])->render();
+        }
+
+        // photos
+        $photosHtml = view('photos', ['photos' => $photos])->render();
+
+        // create content array with data for report
+        $content = array('report' => $html, 'explanations' => $explanations, 'photos' => $photosHtml, 'sketch' => $sketch);
+
+        // end pdf url
+        $pdfUrl = $this->reportModel->generate($content, $id, $request);
         return response()->json(array('pdfUrl' => $pdfUrl), 200);
     }
 
@@ -128,8 +152,7 @@ class Reports extends BaseController {
         $fields = [];
 
         try {
-            $reports = $this->getBaseQuery(false, false)
-                ->get();
+            $reports = $this->getBaseQuery(false, false)->get();
             $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                 'Inspector', 'Date of Inspection', 'Date Created');
             $fields = $this->createAssociateFieldArray($stringFields, $fields);

@@ -27,19 +27,20 @@ class Report {
             use a 10’ X 10’ test square on all 4 directional slopes to test the statistical average of hail.'
     ];
 
-    public function generate($html, $photosHtml, $id, $request) {
+    public function generate($content, $id, $request) {
         $cwd = getcwd();
         $reportName = '/reports/' . $id . '_' . 'report.pdf';
         $photoName = '/reports/' . $id . '_' . 'photos.pdf';
+        $explanationsName = '/reports/' . $id . '_' . 'explanations.pdf';
         $finalName = '/reports/' . $id . '_final.pdf';
         $dockerBase = $request->session()->get('dockerBase');
 
         // unlink old files
-        $this->unlinkFiles(array($cwd . $reportName, $cwd . $photoName, $cwd . $finalName));
+        $this->unlinkFiles(array($cwd . $reportName, $cwd . $photoName, $cwd . $finalName, $cwd . $explanationsName));
 
         // report overview
         $reportPdf = App::make('dompdf.wrapper');
-        $reportPdf->loadHTML($html);
+        $reportPdf->loadHTML($content['report']);
         $reportOutput = $reportPdf->output();
 
         // sketch pdf
@@ -50,16 +51,28 @@ class Report {
 
         // photos pdf
         $photosPdf = App::make('dompdf.wrapper');
-        $photosPdf->loadHTML($photosHtml);
+        $photosPdf->loadHTML($content['photos']);
         $photosOutput = $photosPdf->output();
 
         file_put_contents($cwd . $reportName, $reportOutput);
         file_put_contents($cwd . $photoName, $photosOutput);
-        file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
-            'pdftk ' . $reportName . ' ' . $photoName . ' cat output ' . $finalName . "\n" .
-            'chmod 777 ' . $finalName);
 
-        // Run our docker-compose
+        // only if explanations != false
+        if ($content['explanations'] != false) {
+            $explanationsPdf = App::make('dompdf.wrapper');
+            $explanationsPdf->loadHTML($content['explanations']);
+            $explanationsOutput = $explanationsPdf->output();
+            file_put_contents($cwd . $explanationsName, $explanationsOutput);
+            file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
+                'pdftk ' . $reportName . ' ' . $photoName . ' ' . $explanationsName . '  cat output ' . $finalName . "\n" .
+                'chmod 777 ' . $finalName);
+        } else {
+            file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
+                'pdftk ' . $reportName . ' ' . $photoName . ' cat output ' . $finalName . "\n" .
+                'chmod 777 ' . $finalName);
+        }
+
+        // run our docker-compose
         exec('cd ' . $dockerBase . ' && pwd && ./run.sh 2>&1', $output);
 
         $shared = new Shared();
@@ -108,7 +121,9 @@ class Report {
             ->select(DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'),
                 'work_order.address',
                 DB::raw('CONCAT(work_order.city, "/", work_order.state, "/", work_order.zip_code) as addressLine2'),
-                'policy_num', 'date_of_inspection', 'user.name as adjuster', 'user_profiles.insurance_company as insurance_company')
+                'policy_num', 'claim_num', 'date_of_inspection', 'user.name as adjuster',
+                DB::raw('CONCAT(user_profiles.first_name, " ", user_profiles.last_name) as adjusterName'),
+                'user_profiles.insurance_company as insurance_company', 'work_order.inspection_outcome')
             ->leftJoin('user', 'user.id', '=', 'work_order.adjuster_id')
             ->leftJoin('user_profiles', 'user_profiles.user_id', '=', 'user.id')
             ->where('work_order.id', $id)->get();
