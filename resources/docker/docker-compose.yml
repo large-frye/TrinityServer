@@ -1,5 +1,0 @@
-pdftk:
-  build: .
-  volumes:
-    - /php/TrinityServer/public/reports:/reports
-  entrypoint: /reports/report.sh
