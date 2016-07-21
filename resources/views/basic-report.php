@@ -7,7 +7,7 @@
             margin:0px; padding:0; margin-top: 10px;
         }
         body{
-            font:12px Georgia, serif;
+            font:14px Georgia, serif;
             line-height: 24px;
         }
         #page-wrap{
