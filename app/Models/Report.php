@@ -60,7 +60,10 @@ class Report {
             'chmod 777 ' . $finalName);
 
         // Run our docker-compose
+        echo exec('whoami');
+        echo $dockerBase;
         exec('cd ' . $dockerBase . ' && pwd && ./run.sh 2>&1', $output);
+        print_r($output);
 
         $shared = new Shared();
         $url = $shared->uploadLocalFile($cwd . $finalName, 'inspections/' . $id, $finalName);
