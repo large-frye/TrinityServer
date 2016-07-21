@@ -12,6 +12,7 @@ use App\Util\Shared;
 use Barryvdh\DomPDF;
 use Illuminate\Support\Facades\App;
 use DB;
+use Illuminate\Support\Facades\Log;
 
 
 class Report {
@@ -32,8 +33,6 @@ class Report {
         $photoName = '/reports/' . $id . '_' . 'photos.pdf';
         $finalName = '/reports/' . $id . '_final.pdf';
         $dockerBase = $request->session()->get('dockerBase');
-
-        echo exec('whoami');
 
         // unlink old files
         $this->unlinkFiles(array($cwd . $reportName, $cwd . $photoName, $cwd . $finalName));
