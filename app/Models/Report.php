@@ -61,6 +61,7 @@ class Report {
 
         // Run our docker-compose
         exec('cd ' . $dockerBase . ' && pwd && ./run.sh 2>&1', $output);
+        print_r($output);
 
         $shared = new Shared();
         $url = $shared->uploadLocalFile($cwd . $finalName, 'inspections/' . $id, $finalName);
