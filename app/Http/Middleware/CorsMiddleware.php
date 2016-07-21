@@ -12,9 +12,9 @@ namespace App\Http\Middleware;
 class CorsMiddleware
 {
 
-    const ENDPOINT = 'http://52.2.169.5:8000';
+    const ENDPOINT = 'http://52.205.216.249:8000';
     public static $crossOrigin = CorsMiddleware::ENDPOINT;
-    var $fileBase = 'http://52.2.169.5/exports';
+    var $fileBase = 'http://52.205.216.249/exports';
     var $dockerBase = '/usr/share/nginx/html/trinity-server/resources/docker';
 
     public function handle($request, \Closure $next) {
