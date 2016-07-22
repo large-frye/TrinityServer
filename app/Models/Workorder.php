@@ -229,16 +229,19 @@ class Workorder extends Model {
     public function getInspectorWorkorders($id)
     {
         $orders = [];
-        $today = new Time(date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59'));
-        $tomorrow = new Time(date('Y-m-d 00:00:00', strtotime('1 day')), date('Y-m-d 23:59:59', strtotime('1 day')));
-        $yesterday = new Time(date('Y-m-d 00:00:00', strtotime('-1 day')), date('Y-m-d 23:59:59', strtotime('-1 day')));
+        $today = new Time(strtotime('today') * 1000, strtotime('tomorrow') * 1000);
+        $tomorrow = new Time(strtotime('tomorrow') * 1000, strtotime('2 day') * 1000);
+        $yesterday = new Time(strtotime('-1 day') * 1000, strtotime('today') * 1000);
 
         try {
 
             $query = $this->getBaseQuery('inspection_outcome')
                 ->where('inspector_id', $id)
                 ->where(function ($query) use (&$today, &$tomorrow, &$yesterday) {
-                    $query->whereIn('status_id', array(Reports::NEW_PICKUP, Reports::INSPECTOR_ATTENTION_REQUIRED))
+                    $query->where('status_id', Reports::NEW_PICKUP)
+
+                        ->orWhere('alert_to_inspector', 1)
+                        
                         // today
                         ->orWhere(function($query) use (&$today) {
                             $query->whereBetween('date_of_inspection', [$today->getStart(), $today->getEnd()]);
@@ -256,13 +259,20 @@ class Workorder extends Model {
             $results = $query->get();
 
             foreach ($results as $key => $order) {
-                if (in_array($order->status_id, array(Reports::NEW_PICKUP, Reports::INSPECTOR_ATTENTION_REQUIRED))) {
+                if (in_array($order->status_id, array(Reports::NEW_PICKUP))) {
                     $status = $order->status_id == Reports::NEW_PICKUP ? 'new_pickups' : 'inspector_attention_required';
                     if (!isset($orders[$status])) {
                         $orders[$status] = array($order);
                     } else {
                         array_push($orders[$status], $order);
                     }
+                } else if ($order->alert_to_inspector == 1) {
+                    if (!isset($orders['inspector_attention_required'])) {
+                        $orders['inspector_attention_required'] = array($order);
+                    } else {
+                        array_push($orders['inspector_attention_required'], $order);
+                    }
+
                 } else if ($order->date_of_inspection >= $today->getStart() && $order->date_of_inspection <= $today->getEnd()) {
                     if (!isset($orders['today'])) {
                         $orders['today'] = array($order);
@@ -300,7 +310,9 @@ class Workorder extends Model {
             'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type', 'date_of_inspection',
             DB::raw('DATE_FORMAT(date_of_inspection, \'%h:%i:%s\') as time_of_inspection'),
             'work_order.created_at as date_created', 'work_order.city', 'work_order.status_id', 'work_order.zip_code',
-            'u2.name as inspector');
+            'u2.name as inspector', 'alert_to_inspector', 'p.insurance_company as adjuster_insurance',
+            'p2.insurance_company as inspector_company', 'p2.first_name as inspector_fname',
+            'p2.last_name as inspector_lname', 'work_order.address');
 
         $query = DB::table('work_order');
 
@@ -312,6 +324,7 @@ class Workorder extends Model {
             ->leftJoin('user as u', 'work_order.adjuster_id', '=', 'u.id')
             ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
             ->leftJoin('user_profiles as p', 'u.id', '=', 'p.user_id')
+            ->leftJoin('user_profiles as p2', 'u2.id', '=', 'p2.user_id')
             ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
 
         if ($metaKey) {

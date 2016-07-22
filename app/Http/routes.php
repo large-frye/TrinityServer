@@ -48,7 +48,6 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
     $app->get('/workorder/{id}', 'App\Http\Controllers\Workorders@get');
 
     $app->post('/workorder/log', 'App\Http\Controllers\Workorders@log');
-    $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
     $app->post('/workorder/update', 'App\Http\Controllers\Workorders@update');
     $app->post('/workorders/notes/delete', 'App\Http\Controllers\WorkorderNotes@deleteNotes');
     $app->post('/workorders/notes/save/{id}', 'App\Http\Controllers\WorkorderNotes@saveNote');
@@ -62,11 +61,6 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
     $app->get('/inspections/outcomes', 'App\Http\Controllers\Inspections@getOutcomes');
     $app->get('/inspections/types', 'App\Http\Controllers\Inspections@getInspectionTypes');
     $app->get('/inspections/{id}', 'App\Http\Controllers\Inspections@get');
-
-    # Inspection Form
-    $app->get('/form/get', 'App\Http\Controllers\Form@get');
-    $app->post('/form/save', 'App\Http\Controllers\Form@save');
-    $app->post('/form/upload', 'App\Http\Controllers\Form@uploadForm');
 
     # Counts (sub of workorders)
     $app->get('/workorders/counts', 'App\Http\Controllers\Workorders@getCounts');
@@ -88,21 +82,6 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
 
     # Report Generate
     $app->get('/generate/{id}', 'App\Http\Controllers\Reports@generate');
-
-    # Photos
-    $app->get('/photos/zip/{id}', 'App\Http\Controllers\Photo@getZippedFiles');
-    $app->get('/photos/sub-categories/{parentId}/{workorderId}', 'App\Http\Controllers\Photo@getSubCategories');
-    $app->get('/photos/parent-categories/{id}', 'App\Http\Controllers\Photo@getParentCategories');
-    $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
-    $app->get('/photos/{workorderId}/{parentId}/{subParentId}/{labelName}', 'App\Http\Controllers\Photo@getLabeledPhotos');
-    $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
-
-
-    $app->post('/photos/resize', 'App\Http\Controllers\Photo@resizePhotos');
-    $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
-    $app->post('/photos/rotate', 'App\Http\Controllers\Photo@rotatePhotos');
-    $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
-    $app->post('/photos/delete/{workorderId}', 'App\Http\Controllers\Photo@deletePhotos');
 
     # Settings
     $app->post('/settings/categories/save', 'App\Http\Controllers\Settings@saveCategories');
@@ -134,11 +113,38 @@ $app->group(['prefix' => 'api/shared', 'middleware' => array('jwt.auth')], funct
     $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
     $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
 
+    # Workorder
+    $app->get('/workorder/statuses', 'App\Http\Controllers\Workorders@getStatuses');
+    $app->get('/workorder/is-locked/{id}', 'App\Http\Controllers\Workorders@checkLock');
+    $app->get('/workorder/{id}', 'App\Http\Controllers\Workorders@get');
+
+    $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
+
+    # Inspections
+    $app->get('/inspections/outcomes', 'App\Http\Controllers\Inspections@getOutcomes');
+    $app->get('/inspections/types', 'App\Http\Controllers\Inspections@getInspectionTypes');
+    $app->get('/inspections/{id}', 'App\Http\Controllers\Inspections@get');
+
     # Billing
     $app->get('/billing/mileage/{id}/{week}', 'App\Http\Controllers\Invoice@getWeeklyInspectorMileage');
     $app->get('/billing/check-lock/{id}', 'App\Http\Controllers\Invoice@checkInspectorLock');
     $app->get('/billing/{start}/{end}', 'App\Http\Controllers\Invoice@getInvoicesByRange');
     $app->get('/billing/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
+
+    # Photos
+    $app->get('/photos/zip/{id}', 'App\Http\Controllers\Photo@getZippedFiles');
+    $app->get('/photos/sub-categories/{parentId}/{workorderId}', 'App\Http\Controllers\Photo@getSubCategories');
+    $app->get('/photos/parent-categories/{id}', 'App\Http\Controllers\Photo@getParentCategories');
+    $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
+    $app->get('/photos/{workorderId}/{parentId}/{subParentId}/{labelName}', 'App\Http\Controllers\Photo@getLabeledPhotos');
+    $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
+
+
+    $app->post('/photos/resize', 'App\Http\Controllers\Photo@resizePhotos');
+    $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
+    $app->post('/photos/rotate', 'App\Http\Controllers\Photo@rotatePhotos');
+    $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
+    $app->post('/photos/delete/{workorderId}', 'App\Http\Controllers\Photo@deletePhotos');
 
     # Resources
     $app->post('/resources', 'App\Http\Controllers\Resources@getResources');
@@ -158,4 +164,10 @@ $app->group(['prefix' => 'api/shared', 'middleware' => array('jwt.auth')], funct
     # Profile
     $app->post('/profile/save', 'App\Http\Controllers\Account@update_user');
     $app->post('/password/save', 'App\Http\Controllers\Account@updatePassword');
+    $app->get('/workorders/notes/{id}', 'App\Http\Controllers\WorkorderNotes@getNotes');
+
+    # Inspection Form
+    $app->get('/form/get', 'App\Http\Controllers\Form@get');
+    $app->post('/form/save', 'App\Http\Controllers\Form@save');
+    $app->post('/form/upload', 'App\Http\Controllers\Form@uploadForm');
 });

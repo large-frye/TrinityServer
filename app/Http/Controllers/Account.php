@@ -195,6 +195,8 @@ class Account extends BaseController {
                 DB::table('roles_user')->where('user_id', $request->id)->update(array('role_id' => $request->roles_user[0]['role_id']));
             }
 
+            return response()->json(compact('user'), 200);
+
         } catch (ModelNotFoundException $e) {
             if ($e->getMessage() == 'No query results for model [App\User].') {
                 $this->create_user($request);

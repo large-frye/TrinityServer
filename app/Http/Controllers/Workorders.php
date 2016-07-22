@@ -130,4 +130,9 @@ class Workorders extends BaseController
         $workorder->save();
         return response()->json(compact('workorder'), 200);
     }
+
+    public function checkLock($id) {
+        $workorder = Workorder::find($id);
+        return response()->json(array('status' => $workorder->billing_locked), 200);
+    }
 }
