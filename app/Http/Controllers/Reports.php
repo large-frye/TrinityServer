@@ -153,7 +153,7 @@ class Reports extends BaseController {
 
         try {
             $reports = $this->getBaseQuery(false, false)->get();
-            $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+            $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                 'Inspector', 'Date of Inspection', 'Date Created');
             $fields = $this->createAssociateFieldArray($stringFields, $fields);
             $name = array(ucfirst(str_replace('-', ' ', 'All')));
@@ -344,7 +344,7 @@ class Reports extends BaseController {
             switch ($status) {
                 case 'open':
                     $reports = $this->reportsByStatus(array(Reports::CLOSED, Reports::CLOSED_CANCELLED), $inspectionType, true);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Open Inspections';
@@ -352,7 +352,7 @@ class Reports extends BaseController {
 
                 case 'inspector-attention-required':
                     $reports = $this->getReportsByAttType(Reports::ALERT_TO_INSPECTOR, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Time of Inspection',  'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections Requiring Inspector\'s Attention';
@@ -360,7 +360,7 @@ class Reports extends BaseController {
 
                 case 'office-attention-required':
                     $reports = $this->getReportsByAttType(Reports::ALERT_OFFICE, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections Requiring Office Attention';
@@ -368,7 +368,7 @@ class Reports extends BaseController {
 
                 case 'admin-attention-required':
                     $reports = $this->getReportsByAttType(Reports::ALERT_ADMIN, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections Requiring Admin Attention';
@@ -376,7 +376,7 @@ class Reports extends BaseController {
 
                 case 'new-pickups':
                     $reports = $this->reportsByStatus(Reports::NEW_PICKUP, $inspectionType);
-                    $stringFields = array('Customer ID', 'Inspector', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Inspector', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'New Pickups From Inspectors';
@@ -384,7 +384,7 @@ class Reports extends BaseController {
 
                 case 'new':
                     $reports = $this->reportsByStatus(Reports::NEW_INSPECTION, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'New Inspections';
@@ -392,7 +392,7 @@ class Reports extends BaseController {
 
                 case 'in-process':
                     $reports = $this->reportsByStatus(Reports::IN_PROCESS, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections In Process';
@@ -400,7 +400,7 @@ class Reports extends BaseController {
 
                 case 'process-reschedule':
                     $reports = $this->reportsByStatus([Reports::IN_PROCESS, Reports::RESCHEDULE], $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
                         'Date of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Need To Be Scheduled';
@@ -408,7 +408,7 @@ class Reports extends BaseController {
 
                 case 'reschedule':
                     $reports = $this->reportsByStatus(Reports::RESCHEDULE, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
                         'Date of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Need To Be Rescheduled';
@@ -416,7 +416,7 @@ class Reports extends BaseController {
 
                 case 'on-hold':
                     $reports = $this->reportsByStatus(Reports::ON_HOLD, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are On Hold';
@@ -424,7 +424,7 @@ class Reports extends BaseController {
 
                 case 'scheduled':
                     $reports = $this->reportsByStatus(Reports::SCHEDULED, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'Date of Last Contact', 'City', 'State',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'Date of Last Contact', 'City', 'State',
                         'Adjuster', 'Date of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Scheduled Inspections';
@@ -435,7 +435,7 @@ class Reports extends BaseController {
                         ->where('status_id', '=', Reports::SCHEDULED)
                         ->where('date_of_inspection', '<', time() * 1000)
                         ->get();
-                    $stringFields = array('Customer ID', 'Date of Inspection', 'Inspector', 'Inspection Time',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Inspection Time',
                         'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are Past Their Inspection Date';
@@ -443,7 +443,7 @@ class Reports extends BaseController {
 
                 case 'inspected':
                     $reports = $this->reportsByStatus(Reports::INSPECTED, $inspectionType);
-                    $stringFields = array('Customer ID', 'Date of Inspection', 'Inspector', 'Inspection Time',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Inspection Time',
                         'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspected That Have Been Completed';
@@ -451,7 +451,7 @@ class Reports extends BaseController {
 
                 case 'pre-invoice':
                     $reports = $this->getInspectorReports(Reports::PRE_INVOICE, $status);
-                    $stringFields = array('Customer ID', 'Date of Inspection', 'Inspection Outcome', 'Date Invoiced',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspection Outcome', 'Date Invoiced',
                         'Adjuster', 'Insurance Company', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Need one';
@@ -499,7 +499,7 @@ class Reports extends BaseController {
 
                 case 'cancelled':
                     $reports = $this->reportsByStatus(Reports::CANCELLED, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date Cancelled', 'Date Created');
                     $header = 'Cancelled Inspections';
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
@@ -507,7 +507,7 @@ class Reports extends BaseController {
 
                 case 'cancelled-closed':
                     $reports = $this->reportsByStatus(Reports::CLOSED_CANCELLED, $inspectionType);
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date Cancelled', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Closed Inspections (Cancelled)';
@@ -517,7 +517,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->today, $this->countModel->tomorrow])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Today\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -527,7 +527,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->tomorrow, $this->countModel->nextTwoDays])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Tomorrow\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -537,7 +537,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->yesterday, $this->countModel->today])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Yesterday\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -547,7 +547,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->thisWeek, $this->countModel->nextWeek])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'This Week\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -557,7 +557,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->lastWeek, $this->countModel->thisWeek])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector', 'Date of Inspection',
                         'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Last Week\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -567,7 +567,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->nextWeek, $this->countModel->twoNextWeek])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Next Week\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -577,7 +577,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->thisMonth, $this->countModel->nextMonth])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Inspector', 'Date of Inspection',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Inspector', 'Date of Inspection',
                         'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'This Month\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -587,7 +587,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->lastMonth, $this->countModel->thisMonth])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Last Month\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -597,7 +597,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->nextMonth, $this->countModel->lastDayOfNextMonth])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Next Month\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -608,7 +608,7 @@ class Reports extends BaseController {
                         ->whereBetween('date_of_inspection', [$this->countModel->year, $this->countModel->nextYear])
                         ->groupBy('work_order.id')
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'This Year\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -618,7 +618,7 @@ class Reports extends BaseController {
                     $reports = $this->getBaseQuery(false, $inspectionType)
                         ->whereBetween('date_of_inspection', [$this->countModel->lastYear, $this->countModel->year])
                         ->get();
-                    $stringFields = array('Customer ID', 'Insured', 'State', 'Adjuster', 'Inspector',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector',
                         'Date of Inspection', 'Inspection Type', 'Inspection Outcome', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Last Year\'s ' . $this->getInspectionStr($inspectionType) . ' Inspections';
@@ -726,7 +726,7 @@ class Reports extends BaseController {
             'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type',
             DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%Y-%m-%d") as date_of_inspection'),
             DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%h:%m:%s") as time_of_inspection'),
-            'work_order.created_at as date_created', 'work_order.city',
+            'work_order.created_at as date_created', 'work_order.city', 'work_order.claim_num',
             'u2.name as inspector');
 
         $query = DB::table('work_order');
