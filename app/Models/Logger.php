@@ -94,7 +94,8 @@ class Logger
         $msg = "";
         foreach ($changedItems as $changedParent) {
             foreach ($changedParent as $changeChild) {
-                $msg .= $changeChild['key'] . " was changed to " . $changeChild['new'] . " from " . $changeChild['old']
+                $msg .= "<strong>"  . $changeChild['key'] . "</strong>" . " was changed. <br/> <strong>To:</strong> " . $changeChild['new'] . "<br/>
+                 <strong>From:</strong> " . $changeChild['old']
                     . Logger::LOG_DELIMITER;
             }
         }
