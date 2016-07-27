@@ -128,6 +128,10 @@ class Workorders extends BaseController
         }
 
         $workorder->save();
+        $workorder->adjuster;
+        $workorder->adjuster->profile;
+        $workorder->inspector;
+        $workorder->inspector->profile;
         return response()->json(compact('workorder'), 200);
     }
 
