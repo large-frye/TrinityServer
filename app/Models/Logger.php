@@ -126,7 +126,14 @@ class Logger
         $items = [];
         foreach ($haystack as $item => $value) {
             if (isset($needle[$item]) && $needle[$item] != $value) {
-                array_push($items, array('old' => $value, 'new' => $needle[$item], 'key' => $item));
+                if (preg_match('/date/', $item) == 1) {
+                    $oldDate = date('Y-m-d h:i A', $value / 1000);
+                    $newDate = date('Y-m-d h:i A', $needle[$item] / 1000);
+                    array_push($items, array('old' => $oldDate, 'new' => $newDate, 'key' => $item));
+                } else {
+                    array_push($items, array('old' => $value, 'new' => $needle[$item], 'key' => $item));
+                }
+
             }
         }
         return $items;
