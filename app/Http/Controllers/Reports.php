@@ -400,7 +400,7 @@ class Reports extends BaseController {
 
                 case 'process-reschedule':
                     $reports = $this->reportsByStatus([Reports::IN_PROCESS, Reports::RESCHEDULE], $inspectionType);
-                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State', 'Adjuster',
                         'Date of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Need To Be Scheduled';
