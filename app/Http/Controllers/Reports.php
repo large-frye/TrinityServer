@@ -460,7 +460,7 @@ class Reports extends BaseController {
                 case 'invoiced':
                     $reports = $this->reportsByStatus(Reports::INVOICED, $inspectionType);
                     $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
-                        'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
+                        'Adjuster', 'Insurance Company', 'Claim Num', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Have Been Invoiced & Are Waiting For Payment';
                     break;
@@ -468,7 +468,7 @@ class Reports extends BaseController {
                 case 'reporting':
                     $reports = $this->reportsByStatus(Reports::REPORTING, $inspectionType);
                     $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
-                        'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
+                        'Adjuster', 'Insurance Company', 'Claim Num', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are Ready For A Report';
                     break;
@@ -476,7 +476,7 @@ class Reports extends BaseController {
                 case 'inv-alacrity':
                     $reports = $this->reportsByStatus(Reports::INVOICE_ALACRITY, $inspectionType);
                     $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
-                        'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
+                        'Adjuster', 'Insurance Company', 'Claim Num', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are Ready To Be Submitted To Alacrity For Payment';
                     break;
@@ -484,15 +484,15 @@ class Reports extends BaseController {
                 case 'invoicing':
                     $reports = $this->reportsByStatus(Reports::INVOICING, $inspectionType);
                     $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
-                        'Adjuster', 'Insurance Company', 'Claim #', 'Insured', 'State', 'Date Created');
+                        'Adjuster', 'Insurance Company', 'Claim Num', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections Ready For Invoicing Through Quickbooks';
                     break;
 
                 case 'closed':
                     $reports = $this->reportsByStatus(Reports::CLOSED, $inspectionType);
-                    $stringFields = array('Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Outcome',
-                        'Date of Inspection', 'Date Invoiced', 'Date Pymt Received', 'Date Created');
+                    $stringFields = array('Customer Id', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+                        'Inspection Outcome', 'Date of Inspection', 'Date Invoiced', 'Date Pymt Received', 'Date Created');
                     $header = 'Closed Inspections';
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     break;
