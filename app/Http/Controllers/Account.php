@@ -248,8 +248,23 @@ class Account extends BaseController {
     }
 
     public function getUsers() {
-        $users = User::all();
-        return response()->json(compact('users'), 200);
+        $users = DB::table('user')
+            ->select('user.id', 'user.email', 'ru.role_id')
+            ->leftJoin('user_profiles as up', 'user.id', '=', 'up.user_id')
+            ->leftJoin('roles_user as ru', 'user.id', '=', 'ru.user_id')
+            ->get();
+
+        $usersByRoles = [];
+
+        foreach ($users as $user) {
+            if (isset($usersByRoles[$user->role_id])) {
+                array_push($usersByRoles[$user->role_id], $user);
+            } else {
+                $usersByRoles[$user->role_id] = array($user);
+            }
+        }
+
+        return response()->json(compact('usersByRoles'), 200);
     }
 
     public function getUser($id) {
