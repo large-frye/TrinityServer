@@ -58,19 +58,21 @@ class Shared
      */
     public function upload($files, $input, $path, $name = null) {
         $urls = [];
+        $useFileName = false;
+
+        if ($name == null)
+            $useFileName = true;
 
         try {
             $this->files = $files;
             $this->input = $input;
-            $key = '';
 
             foreach($this->files as $file => $value) {
-                $this->file = $this->files[$file];
                 $this->error = $this->file['error'];
-                $name = $name === null ? $this->file['name'] : $name;
+                $name = $useFileName ? $value['name'] : $name;
                 $key = $path . '/' . str_replace('/', '', $name);
 
-                if ($this->error !== 0) {
+                if ($value['error'] !== 0) {
                     return 'Error uploading file(s)';
                 }
 
@@ -79,7 +81,7 @@ class Shared
                         'ACL' => $this->acl->getPublic(),
                         'Bucket' => Shared::BUCKET,
                         'Key' => $key,
-                        'SourceFile' => $this->file['tmp_name']
+                        'SourceFile' => $value['tmp_name']
                     ));
 
                     $url = 'https://s3.amazonaws.com/trinity-content/' . $key;
