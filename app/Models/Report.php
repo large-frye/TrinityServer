@@ -46,10 +46,12 @@ class Report {
         $reportOutput = $reportPdf->output();
 
         // sketch pdf
-        $sketchPdf = App::make('dompdf.wrapper');
-        $sketchPdf->setPaper('A4', 'landscape');
-        $sketchPdf->loadHTML($content['sketches']);
-        $sketchOutput = $sketchPdf->output();
+        if (strlen($content['sketches']) > 0) {
+            $sketchPdf = App::make('dompdf.wrapper');
+            $sketchPdf->setPaper('A4', 'landscape');
+            $sketchPdf->loadHTML($content['sketches']);
+            $sketchOutput = $sketchPdf->output();
+        }
 
         // photos pdf
         $photosPdf = App::make('dompdf.wrapper');
@@ -58,7 +60,9 @@ class Report {
 
         file_put_contents($cwd . $reportName, $reportOutput);
         file_put_contents($cwd . $photoName, $photosOutput);
-        file_put_contents($cwd . $sketchName, $sketchOutput);
+
+        if (strlen($content['sketches']) > 0)
+            file_put_contents($cwd . $sketchName, $sketchOutput);
 
         // only if explanations != false
         if ($content['explanations'] != false) {
@@ -66,22 +70,25 @@ class Report {
             $explanationsPdf->loadHTML($content['explanations']);
             $explanationsOutput = $explanationsPdf->output();
             file_put_contents($cwd . $explanationsName, $explanationsOutput);
-            file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
+            $contents = '#!/bin/bash' . "\n" .
                 'pdftk ' .
-                $reportName . ' ' .
-                $sketchName . ' ' .
-                $photoName . ' ' .
-                $explanationsName .
-                '  cat output ' . $finalName . "\n" .
-                'chmod 777 ' . $finalName);
+                $reportName . ' ';
+
+            if (strlen($content['sketches']) > 0) {
+                $contents .= $sketchName . ' ';
+            }
+
+            $contents .= $photoName . ' ' .  $explanationsName . '  cat output ' . $finalName . "\n" . 'chmod 777 ' .
+                $finalName;
+
+            file_put_contents('reports/report.sh', $contents);
         } else {
-            file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
-                'pdftk ' .
-                $reportName . ' ' .
-                $sketchName . ' ' .
-                $photoName .
-                ' cat output ' . $finalName . "\n" .
-                'chmod 777 ' . $finalName);
+            $fileContents = '#!/bin/bash' . "\n" . 'pdftk ' . $reportName . ' ';
+            if (strlen($content['sketches']) > 0) {
+                $fileContents .= $sketchName . ' ';
+            }
+            $fileContents .= $photoName . ' cat output ' . $finalName . "\n" . 'chmod 777 ' . $finalName;
+            file_put_contents('reports/report.sh', $fileContents);
         }
 
         // run our docker-compose

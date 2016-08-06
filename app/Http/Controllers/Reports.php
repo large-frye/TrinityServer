@@ -143,8 +143,10 @@ class Reports extends BaseController {
         $photosHtml = view('photos', ['photos' => $photos])->render();
 
         // sketches
-        foreach($sketches as $sketch) {
-            $sketchHtml .= '<img src="' . $sketch->file_url . '" alt="" style="max-width:100%; position: absolute; top: -50px;"/>';
+        if (count($sketches) > 0) {
+            foreach($sketches as $sketch) {
+                $sketchHtml .= '<img src="' . $sketch->file_url . '" alt="" style="max-width:100%; position: absolute; top: -50px;"/>';
+            }
         }
 
         // create content array with data for report
