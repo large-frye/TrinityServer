@@ -1,3 +1,3 @@
 #!/bin/bash
-pdftk /reports/36_report.pdf /reports/36_photos.pdf cat output /reports/36_final.pdf
-chmod 777 /reports/36_final.pdf
+pdftk /reports/2_report.pdf /reports/2_sketch.pdf /reports/2_photos.pdf cat output /reports/2_final.pdf
+chmod 777 /reports/2_final.pdf

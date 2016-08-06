@@ -94,6 +94,8 @@
     <?php
 
         $pageBreak = false;
+        $count = 0;
+        $index = 0;
 
         foreach ($photos as $photo) {
 
@@ -104,7 +106,7 @@
                 $break = '<div class="page-break"></div>';
                 $header = '<div class="imgDiv"><h3 class="parentCatHead">' . $photo->c1_name . '</h3>';
 
-                if (!$pageBreak) {
+                if (!$pageBreak && $count != 0) {
                     $header = $break . $header;
                 }
 
@@ -120,13 +122,14 @@
             echo '<div class="imgCl"><span>' . $photo->label . '</span><br>' .
                 '<img class="photoImgView" src="' . $photo->file_url . '" style="width:600px;height:400px;position:relative;left:-100px;top:20px;margin-top:20px;" /></div>';
 
-            if ($count % 2 == 0) {
+            if ($count % 2 == 0 && $index + 1 < count($photos)) {
                 $count = 0;
                 echo '<div class="page-break"></div>';
                 $pageBreak = true;
             }
 
             $lastParentId = $photo->c1_id;
+            $index++;
         }
 
         echo '</div>';

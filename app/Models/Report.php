@@ -32,6 +32,7 @@ class Report {
         $reportName = '/reports/' . $id . '_' . 'report.pdf';
         $photoName = '/reports/' . $id . '_' . 'photos.pdf';
         $explanationsName = '/reports/' . $id . '_' . 'explanations.pdf';
+        $sketchName = '/reports/' . $id . '_' . 'sketch.pdf';
         $finalName = '/reports/' . $id . '_final.pdf';
         $dockerBase = $request->session()->get('dockerBase');
 
@@ -44,10 +45,10 @@ class Report {
         $reportOutput = $reportPdf->output();
 
         // sketch pdf
-//        $photosPdf = App::make('dompdf.wrapper');
-//        $photosPdf->setPaper('A4', 'landscape');
-//        $photosPdf->loadHTML('<p>test</p>');
-//        $photosOutput = $photosPdf->output();
+        $sketchPdf = App::make('dompdf.wrapper');
+        $sketchPdf->setPaper('A4', 'landscape');
+        $sketchPdf->loadHTML($content['sketches']);
+        $sketchOutput = $sketchPdf->output();
 
         // photos pdf
         $photosPdf = App::make('dompdf.wrapper');
@@ -56,6 +57,7 @@ class Report {
 
         file_put_contents($cwd . $reportName, $reportOutput);
         file_put_contents($cwd . $photoName, $photosOutput);
+        file_put_contents($cwd . $sketchName, $sketchOutput);
 
         // only if explanations != false
         if ($content['explanations'] != false) {
@@ -64,11 +66,20 @@ class Report {
             $explanationsOutput = $explanationsPdf->output();
             file_put_contents($cwd . $explanationsName, $explanationsOutput);
             file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
-                'pdftk ' . $reportName . ' ' . $photoName . ' ' . $explanationsName . '  cat output ' . $finalName . "\n" .
+                'pdftk ' .
+                $reportName . ' ' .
+                $sketchName . ' ' .
+                $photoName . ' ' .
+                $explanationsName .
+                '  cat output ' . $finalName . "\n" .
                 'chmod 777 ' . $finalName);
         } else {
             file_put_contents('reports/report.sh', '#!/bin/bash' . "\n" .
-                'pdftk ' . $reportName . ' ' . $photoName . ' cat output ' . $finalName . "\n" .
+                'pdftk ' .
+                $reportName . ' ' .
+                $sketchName . ' ' .
+                $photoName .
+                ' cat output ' . $finalName . "\n" .
                 'chmod 777 ' . $finalName);
         }
 

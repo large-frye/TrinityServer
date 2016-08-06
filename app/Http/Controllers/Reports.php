@@ -122,7 +122,8 @@ class Reports extends BaseController {
         $meta = $this->reportModel->getMetaData($id);
         $data = $this->reportModel->getInspection($id);
         $photos = $this->reportModel->getPhotos(($id));
-        $sketch = WorkorderFile::where('workorder_id', $id)->where('file_type', 'sketch')->get();
+        $sketches = WorkorderFile::where('workorder_id', $id)->where('file_type', 'sketch')->get();
+        $sketchHtml = '';
         $type = $data[0]->inspection_outcome == '9' ? Reports::EXPERT : Reports::LADDER_ASSIST_WITH_REPORT;
 
         $explanations = false;
@@ -139,8 +140,14 @@ class Reports extends BaseController {
         // photos
         $photosHtml = view('photos', ['photos' => $photos])->render();
 
+        // sketches
+        foreach($sketches as $sketch) {
+            $sketchHtml .= '<img src="' . $sketch->file_url . '" alt="" style="max-width:100%; position: absolute; top: -50px;"/>';
+        }
+
         // create content array with data for report
-        $content = array('report' => $html, 'explanations' => $explanations, 'photos' => $photosHtml, 'sketch' => $sketch);
+        $content = array('report' => $html, 'explanations' => $explanations, 'photos' => $photosHtml,
+            'sketches' => $sketchHtml);
 
         // end pdf url
         $pdfUrl = $this->reportModel->generate($content, $id, $request);
