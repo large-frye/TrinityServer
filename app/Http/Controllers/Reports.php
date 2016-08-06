@@ -132,6 +132,8 @@ class Reports extends BaseController {
             $html = view('expert-report', ['meta' => $meta, 'inspection' => $data[0]])->render();
 
             // create explanations here.
+            $explanations = view('explanations',
+                ['explanations' => $this->reportModel->getExplanations($meta, $data[0])])->render();
 
         } else {
             $html = view('basic-report', ['meta' => $meta, 'inspection' => $data[0]])->render();
@@ -150,7 +152,12 @@ class Reports extends BaseController {
             'sketches' => $sketchHtml);
 
         // end pdf url
-        $pdfUrl = $this->reportModel->generate($content, $id, $request);
+        try {
+            $pdfUrl = $this->reportModel->generate($content, $id, $request);
+        } catch (\Exception $e) {
+            return response()->json(array('error' => $e), 200);
+        }
+
         return response()->json(array('pdfUrl' => $pdfUrl), 200);
     }
 
