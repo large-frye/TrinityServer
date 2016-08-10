@@ -27,6 +27,8 @@ $app->withFacades();
 $app->configure('jwt');
 class_alias('Tymon\JWTAuth\Facades\JWTAuth', 'JWTAuth');
 class_alias('Intervention\Image\Facades\Image', 'Image');
+class_alias('Illuminate\Support\Facades\Config', 'Config');
+
 // class_alias('I')
 
 $app->withEloquent();
@@ -77,7 +79,8 @@ $app->singleton(
      'jwt.auth' => Tymon\JWTAuth\Middleware\GetUserFromToken::class,
      'jwt.refresh' => Tymon\JWTAuth\Middleware\RefreshToken::class,
      'authorization.admin' => App\Http\Middleware\Admin::class,
-     'authorization.inspector' => App\Http\Middleware\Inspector::class
+     'authorization.inspector' => App\Http\Middleware\Inspector::class,
+     'authorization.office' => App\Http\Middleware\Office::class
  ]);
 
 $app->register('App\Providers\CatchAllOptionsRequestsProvider');

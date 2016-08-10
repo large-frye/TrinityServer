@@ -16,55 +16,61 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class Settings extends BaseController {
 
-    var $categoryModel;
+  var $categoryModel;
+  var $excelModel;
 
-    public function __construct() {
-        $this->categoryModel = new Categories();
+  public function __construct() {
+    $this->categoryModel = new Categories();
+    $this->excelModel = new \App\Models\Excel();
+  }
+
+  public function saveCategories(Request $request) {
+    return $this->categoryModel->saveCategories($request);
+  }
+
+  public function saveCategory(Request $request) {
+    return $this->categoryModel->saveCategory($request);
+  }
+
+  public function getParents() {
+    try {
+      $categories = Categories::where('allowed_to_be_parent', 1)->get();
+      return response()->json(compact('categories'), 200);
+    } catch (Exception $e) {
+      return response()->json(compact('e'), 500);
     }
+  }
 
-    public function saveCategories(Request $request) {
-        return $this->categoryModel->saveCategories($request);
-    }
-
-    public function saveCategory(Request $request) {
-        return $this->categoryModel->saveCategory($request);
-    }
-
-    public function getParents() {
-        try {
-            $categories = Categories::where('allowed_to_be_parent', 1)->get();
-            return response()->json(compact('categories'), 200);
-        } catch (Exception $e) {
-            return response()->json(compact('e'), 500);
+  public function categorize($categories) {
+    $ret = [];
+    foreach ($categories as $category) {
+      if ($category->parent_id == 0) {
+        if (!isset($ret[0])) {
+          $ret[0] = array($category);
+        } else {
+          array_push($ret[0], $category);
         }
+      }
     }
 
-    public function categorize($categories) {
-        $ret = [];
-        foreach ($categories as $category) {
-            if ($category->parent_id == 0) {
-                if (!isset($ret[0])) {
-                    $ret[0] = array($category);
-                } else {
-                    array_push($ret[0], $category);
-                }
-            }
-        }
+    return $ret;
+  }
 
-        return $ret;
-    }
+  public function deleteCategory($id) {
+    return $this->categoryModel->deleteCategory($id);
+  }
 
-    public function deleteCategory($id) {
-        return $this->categoryModel->deleteCategory($id);
-    }
+  public function bulkUpload(Request $request) {
+    return $this->excelModel->bulkUploadCategories($request);
+  }
 
-    public function createExcel() {
-        ob_end_clean();
-        ob_start();
+  public function createExcel() {
+    ob_end_clean();
+    ob_start();
 
-        $categories = $this->categorize(Categories::all());
+    $categories = $this->categorize(Categories::all());
 
-        print_r($categories);
+    print_r($categories);
 
 //        Excel::create('Bulk Upload', function($excel) use (&$parents) {
 //            foreach ($parents as $parent) {
@@ -79,6 +85,6 @@ class Settings extends BaseController {
 ////            $excel->sheet('sheet name', function($sheet) {
 ////                $sheet->fromArray(['data', 'data']);});
 //        })->download('xlsx');
-    }
+  }
 
 }

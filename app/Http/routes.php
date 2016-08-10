@@ -14,7 +14,7 @@ const PREFIX = 'api';
 */
 
 $app->get('/', function () use ($app) {
-    return $app->welcome();
+  return $app->welcome();
 });
 
 $app->get('/generate/{id}', 'Reports@generate');
@@ -24,20 +24,21 @@ $app->get('/settings/categories/create-excel', 'Settings@createExcel');
 
 $app->group(['prefix' => 'api'], function ($app) {
 
-    # Authentication
-    $app->post('auth/login', 'App\Http\Controllers\Account@signIn');
-    $app->get('auth/logout', 'App\Http\Controllers\Account@signOut');
+  # Authentication
+  $app->post('auth/login', 'App\Http\Controllers\Account@signIn');
+  $app->get('auth/logout', 'App\Http\Controllers\Account@signOut');
 
 });
 
-    # Account
-    #$app->post('account/user/sign-in', 'Account@sign_in');
-    #$app->post('account/user/create', 'Account@create_user');
-    #$app->post('account/user/update', 'Account@update_user');
+# Account
+#$app->post('account/user/sign-in', 'Account@sign_in');
+#$app->post('account/user/create', 'Account@create_user');
+#$app->post('account/user/update', 'Account@update_user');
 
 
 # Protected routes
-$app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authorization.admin')], function($app) {
+$app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authorization.admin')],
+  function ($app) {
     # Workorders
     $app->get('/workorders/time/{time}/{type}', 'App\Http\Controllers\Workorders@getWorkordersByTime');
     $app->get('/workorders/notes/{id}', 'App\Http\Controllers\WorkorderNotes@getNotes');
@@ -88,6 +89,7 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
     $app->post('/settings/categories/save-category', 'App\Http\Controllers\Settings@saveCategory');
     $app->get('/settings/categories/parents', 'App\Http\Controllers\Settings@getParents');
     $app->get('/settings/categories/delete/{id}', 'App\Http\Controllers\Settings@deleteCategory');
+    $app->post('/settings/categories/bulk-upload', 'App\Http\Controllers\Settings@bulkUpload');
 
     # Logger
     $app->get('/logger/{id}', 'App\Http\Controllers\Logger@getWorkorderLog');
@@ -97,77 +99,77 @@ $app->group(['prefix' => 'api/admin', 'middleware' => array('jwt.auth', 'authori
     $app->post('/resources/save', 'App\Http\Controllers\Resources@saveResource');
     $app->post('/resources/upload', 'App\Http\Controllers\Resources@uploadResource');
 
-});
+  });
 
 # Inspector accounts
-$app->group(['prefix' => 'api/inspector', 'middleware' => array('jwt.auth', 'authorization.inspector')], function($app) {
-    $app->get('/workorders/{id}', 'App\Http\Controllers\Inspector@getWorkorders');
-    $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
-    $app->get('/reports/{status}/{id}', 'App\Http\Controllers\Inspector@getReports');
-    $app->get('/inspections/{id}/{userId}', 'App\Http\Controllers\Workorders@getByInspector');
+$app->group(['prefix' => 'api/inspector', 'middleware' => array('jwt.auth', 'authorization.inspector')], function ($app) {
+  $app->get('/workorders/{id}', 'App\Http\Controllers\Inspector@getWorkorders');
+  $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
+  $app->get('/reports/{status}/{id}', 'App\Http\Controllers\Inspector@getReports');
+  $app->get('/inspections/{id}/{userId}', 'App\Http\Controllers\Workorders@getByInspector');
 });
 
 
 # Shared
-$app->group(['prefix' => 'api/shared', 'middleware' => array('jwt.auth')], function($app) {
-    $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
-    $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
+$app->group(['prefix' => 'api/shared', 'middleware' => array('jwt.auth')], function ($app) {
+  $app->get('/users/inspectors', 'App\Http\Controllers\Account@getInspectors');
+  $app->get('/users/{type}', 'App\Http\Controllers\Account@getAdjusters');
 
-    # Workorder
-    $app->get('/workorder/statuses', 'App\Http\Controllers\Workorders@getStatuses');
-    $app->get('/workorder/is-locked/{id}', 'App\Http\Controllers\Workorders@checkLock');
-    $app->get('/workorder/{id}', 'App\Http\Controllers\Workorders@get');
+  # Workorder
+  $app->get('/workorder/statuses', 'App\Http\Controllers\Workorders@getStatuses');
+  $app->get('/workorder/is-locked/{id}', 'App\Http\Controllers\Workorders@checkLock');
+  $app->get('/workorder/{id}', 'App\Http\Controllers\Workorders@get');
 
-    $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
+  $app->post('/workorder/save', 'App\Http\Controllers\Workorders@save');
 
-    # Inspections
-    $app->get('/inspections/outcomes', 'App\Http\Controllers\Inspections@getOutcomes');
-    $app->get('/inspections/types', 'App\Http\Controllers\Inspections@getInspectionTypes');
-    $app->get('/inspections/{id}', 'App\Http\Controllers\Inspections@get');
+  # Inspections
+  $app->get('/inspections/outcomes', 'App\Http\Controllers\Inspections@getOutcomes');
+  $app->get('/inspections/types', 'App\Http\Controllers\Inspections@getInspectionTypes');
+  $app->get('/inspections/{id}', 'App\Http\Controllers\Inspections@get');
 
-    # Billing
-    $app->get('/billing/mileage/{id}/{week}', 'App\Http\Controllers\Invoice@getWeeklyInspectorMileage');
-    $app->get('/billing/check-lock/{id}', 'App\Http\Controllers\Invoice@checkInspectorLock');
-    $app->get('/billing/{start}/{end}', 'App\Http\Controllers\Invoice@getInvoicesByRange');
-    $app->get('/billing/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
+  # Billing
+  $app->get('/billing/mileage/{id}/{week}', 'App\Http\Controllers\Invoice@getWeeklyInspectorMileage');
+  $app->get('/billing/check-lock/{id}', 'App\Http\Controllers\Invoice@checkInspectorLock');
+  $app->get('/billing/{start}/{end}', 'App\Http\Controllers\Invoice@getInvoicesByRange');
+  $app->get('/billing/{start}/{end}/{id}', 'App\Http\Controllers\Invoice@getInvoicesByInspector');
 
-    # Photos
-    $app->get('/photos/zip/{id}', 'App\Http\Controllers\Photo@getZippedFiles');
-    $app->get('/photos/sub-categories/{parentId}/{workorderId}', 'App\Http\Controllers\Photo@getSubCategories');
-    $app->get('/photos/parent-categories/{id}', 'App\Http\Controllers\Photo@getParentCategories');
-    $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
-    $app->get('/photos/{workorderId}/{parentId}/{subParentId}/{labelName}', 'App\Http\Controllers\Photo@getLabeledPhotos');
-    $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
+  # Photos
+  $app->get('/photos/zip/{id}', 'App\Http\Controllers\Photo@getZippedFiles');
+  $app->get('/photos/sub-categories/{parentId}/{workorderId}', 'App\Http\Controllers\Photo@getSubCategories');
+  $app->get('/photos/parent-categories/{id}', 'App\Http\Controllers\Photo@getParentCategories');
+  $app->get('/photos/parent/{id}/{parentId}', 'App\Http\Controllers\Photo@getPhotosByParent');
+  $app->get('/photos/{workorderId}/{parentId}/{subParentId}/{labelName}', 'App\Http\Controllers\Photo@getLabeledPhotos');
+  $app->get('/photos/{id}', 'App\Http\Controllers\Photo@getPhotos');
 
 
-    $app->post('/photos/resize', 'App\Http\Controllers\Photo@resizePhotos');
-    $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
-    $app->post('/photos/rotate', 'App\Http\Controllers\Photo@rotatePhotos');
-    $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
-    $app->post('/photos/delete/{workorderId}', 'App\Http\Controllers\Photo@deletePhotos');
+  $app->post('/photos/resize', 'App\Http\Controllers\Photo@resizePhotos');
+  $app->post('/photos/save', 'App\Http\Controllers\Photo@savePhotos');
+  $app->post('/photos/rotate', 'App\Http\Controllers\Photo@rotatePhotos');
+  $app->post('/photos/{id}', 'App\Http\Controllers\Photo@uploadPhotos');
+  $app->post('/photos/delete/{workorderId}', 'App\Http\Controllers\Photo@deletePhotos');
 
-    # Resources
-    $app->post('/resources', 'App\Http\Controllers\Resources@getResources');
+  # Resources
+  $app->post('/resources', 'App\Http\Controllers\Resources@getResources');
 
-    $app->get('/billing/weeks', 'App\Http\Controllers\Invoice@getInvoiceWeeks');
-    $app->post('/billing/mileage/save', 'App\Http\Controllers\Invoice@saveMileage');
+  $app->get('/billing/weeks', 'App\Http\Controllers\Invoice@getInvoiceWeeks');
+  $app->post('/billing/mileage/save', 'App\Http\Controllers\Invoice@saveMileage');
 
-    # Alerts
-    $app->post('/workorders/notes/save', 'App\Http\Controllers\WorkorderNotes@saveAlertNote');
+  # Alerts
+  $app->post('/workorders/notes/save', 'App\Http\Controllers\WorkorderNotes@saveAlertNote');
 
-    # File
-    $app->get('/files/{id}', 'App\Http\Controllers\WorkorderFile@getWorkorderFiles');
+  # File
+  $app->get('/files/{id}', 'App\Http\Controllers\WorkorderFile@getWorkorderFiles');
 
-    # File upload
-    $app->post('/files/upload', 'App\Http\Controllers\WorkorderFile@uploadWorkorderFiles');
+  # File upload
+  $app->post('/files/upload', 'App\Http\Controllers\WorkorderFile@uploadWorkorderFiles');
 
-    # Profile
-    $app->post('/profile/save', 'App\Http\Controllers\Account@update_user');
-    $app->post('/password/save', 'App\Http\Controllers\Account@updatePassword');
-    $app->get('/workorders/notes/{id}', 'App\Http\Controllers\WorkorderNotes@getNotes');
+  # Profile
+  $app->post('/profile/save', 'App\Http\Controllers\Account@update_user');
+  $app->post('/password/save', 'App\Http\Controllers\Account@updatePassword');
+  $app->get('/workorders/notes/{id}', 'App\Http\Controllers\WorkorderNotes@getNotes');
 
-    # Inspection Form
-    $app->get('/form/get', 'App\Http\Controllers\Form@get');
-    $app->post('/form/save', 'App\Http\Controllers\Form@save');
-    $app->post('/form/upload', 'App\Http\Controllers\Form@uploadForm');
+  # Inspection Form
+  $app->get('/form/get', 'App\Http\Controllers\Form@get');
+  $app->post('/form/save', 'App\Http\Controllers\Form@save');
+  $app->post('/form/upload', 'App\Http\Controllers\Form@uploadForm');
 });
