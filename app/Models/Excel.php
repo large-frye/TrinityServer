@@ -33,10 +33,10 @@ class Excel {
     public function bulkUploadCategories($request) {
       $file = $_FILES['file'];
       $name = $file['name'];
-      file_put_contents($name, file_get_contents($file['tmp_name']));
+      // file_put_contents($name, file_get_contents($file['tmp_name']));
       $data = [];
 
-      ExcelReader::load($name, function($reader) use (&$data) {
+      ExcelReader::load($file['tmp_name'], function($reader) use (&$data) {
         array_push($data, $reader->get());
       });
 
@@ -120,6 +120,9 @@ class Excel {
       $explodedLabels = $labels;
       if (gettype($labels) == "string")
         $explodedLabels = explode(",", $labels);
+
+      if ($labels == "")
+        return;
 
       foreach($explodedLabels as $explodedLabel) {
         $category = new Categories();
