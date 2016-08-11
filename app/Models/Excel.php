@@ -33,7 +33,6 @@ class Excel {
     public function bulkUploadCategories($request) {
       $file = $_FILES['file'];
       $name = $file['name'];
-      // file_put_contents($name, file_get_contents($file['tmp_name']));
       $data = [];
 
       ExcelReader::load($file['tmp_name'], function($reader) use (&$data) {
