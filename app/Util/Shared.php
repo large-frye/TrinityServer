@@ -194,4 +194,13 @@ class Shared
             unlink($file);
         }
     }
+
+    public static function getExportPath($url, $fileName) {
+      preg_match('/http:\/\/api.trinity.dev/', $url, $matches);
+      if (count($matches) > 0) {
+        return 'file:///Users/andrewfrye/Documents/php/TrinityServer/storage/exports/' . $fileName;
+      } else {
+        return 'http://52.205.216.249/exports/' . $fileName;
+      }
+    }
 }

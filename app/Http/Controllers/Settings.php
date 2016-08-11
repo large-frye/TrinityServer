@@ -64,6 +64,10 @@ class Settings extends BaseController {
     return $this->excelModel->bulkUploadCategories($request);
   }
 
+  public function generateExcelCategories(Request $request) {
+    return $this->excelModel->generateExcelCategories($request);
+  }
+
   public function createExcel() {
     ob_end_clean();
     ob_start();
