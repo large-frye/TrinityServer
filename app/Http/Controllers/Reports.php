@@ -416,7 +416,7 @@ class Reports extends BaseController {
 
                 case 'process-reschedule':
                     $reports = $this->reportsByStatus([Reports::IN_PROCESS, Reports::RESCHEDULE], $inspectionType);
-                    $stringFields = array('Customer ID', 'Claim Num', 'Status', 'Insured', 'City', 'State', 'Adjuster',
+                    $stringFields = array('Customer ID', 'Claim Num', 'Status_Id', 'Insured', 'City', 'State', 'Adjuster',
                         'Date of Inspection', 'Inspection Type', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Need To Be Scheduled';
@@ -737,7 +737,7 @@ class Reports extends BaseController {
      * @return mixed
      */
     private function getBaseQuery($metaKey = false, $inspectionType) {
-        $select = array('work_order.id as customer_id',
+        $select = array('work_order.id as customer_id', 'work_order.status_id',
             DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
             'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type',
             DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%Y-%m-%d") as date_of_inspection'),
