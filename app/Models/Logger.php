@@ -10,6 +10,7 @@ namespace App\Models;
 
 use Illuminate\Http\Request;
 use League\Flysystem\Exception;
+use Illuminate\Support\Facades\DB;
 
 
 class Logger
@@ -18,6 +19,8 @@ class Logger
     const LOG_KEY_DELIMITER = ",";
     const FILE = 'file';
     const TEXT = 'text';
+  const ADJUSTER = 'adjuster';
+  const INSPECTOR = 'inspector';
 
     /**
      * Log when a change has happened to a work order.
@@ -65,10 +68,10 @@ class Logger
                 array_push($changedItems, Logger::findChangedItems($data, $order));
 
                 if (isset($data['adjuster']))
-                    array_push($changedItems, Logger::findChangedItems($data['adjuster'], $adjuster));
+                    array_push($changedItems, Logger::findChangedItems($data['adjuster'], $adjuster, Logger::ADJUSTER));
 
                 if (isset($data['inspector']))
-                    array_push($changedItems, Logger::findChangedItems($data['inspector'], $inspector));
+                    array_push($changedItems, Logger::findChangedItems($data['inspector'], $inspector, Logger::INSPECTOR));
 
                 $log->message = Logger::createLogMessage($changedItems);
                 $log->fields = Logger::getFields($changedItems);
@@ -123,16 +126,22 @@ class Logger
      * @param $haystack
      * @return array
      */
-    private static function findChangedItems($needle, $haystack) {
+    private static function findChangedItems($needle, $haystack, $type = null) {
         $items = [];
         foreach ($haystack as $item => $value) {
             if (isset($needle[$item]) && $needle[$item] != $value) {
                 if (preg_match('/date/', $item) == 1) {
-                    $oldDate = date('Y-m-d h:i A', $value / 1000);
-                    $newDate = date('Y-m-d h:i A', $needle[$item] / 1000);
-                    array_push($items, array('old' => $oldDate, 'new' => $newDate, 'key' => $item));
+                  $oldDate = date('Y-m-d h:i A', $value / 1000);
+                  $newDate = date('Y-m-d h:i A', $needle[$item] / 1000);
+                  array_push($items, array('old' => $oldDate, 'new' => $newDate, 'key' => $item));
                 } else {
+                  if (in_array($item, array('inspector_id'))) {
+                    $prevInspector = DB::table('user')->where('id', $value)->get();
+                    $inspector = DB::table('user')->where('id', $needle[$item])->get();
+                    array_push($items, array('old' => $prevInspector[0]->email, 'new' => $inspector[0]  ->email, 'key' => 'The inspector'));
+                  } else {
                     array_push($items, array('old' => $value, 'new' => $needle[$item], 'key' => $item));
+                  }
                 }
 
             }
