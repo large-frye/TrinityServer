@@ -483,24 +483,24 @@ class Reports extends BaseController {
 
                 case 'reporting':
                     $reports = $this->reportsByStatus(Reports::REPORTING, $inspectionType);
-                    $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
-                        'Adjuster', 'Insurance Company', 'Claim Num', 'Insured', 'State', 'Date Created');
+                    $stringFields = array('Customer ID', 'Claim Num', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
+                        'Adjuster', 'Insurance Company', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are Ready For A Report';
                     break;
 
                 case 'inv-alacrity':
                     $reports = $this->reportsByStatus(Reports::INVOICE_ALACRITY, $inspectionType);
-                    $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
-                        'Adjuster', 'Insurance Company', 'Claim Num', 'Insured', 'State', 'Date Created');
+                    $stringFields = array('Customer ID', 'Claim Num', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
+                        'Adjuster', 'Insurance Company', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections That Are Ready To Be Submitted To Alacrity For Payment';
                     break;
 
                 case 'invoicing':
                     $reports = $this->reportsByStatus(Reports::INVOICING, $inspectionType);
-                    $stringFields = array('Customer ID', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
-                        'Adjuster', 'Insurance Company', 'Claim Num', 'Insured', 'State', 'Date Created');
+                    $stringFields = array('Customer ID', 'Claim Num', 'Date of Invoiced', 'Date of Inspection', 'Inspection Outcome',
+                        'Adjuster', 'Insurance Company', 'Insured', 'State', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Inspections Ready For Invoicing Through Quickbooks';
                     break;
