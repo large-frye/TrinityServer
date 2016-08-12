@@ -169,7 +169,7 @@ class Reports extends BaseController {
 
         try {
             $reports = $this->getBaseQuery(false, false)->get();
-            $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+            $stringFields = array('Customer ID', 'Status_Id', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                 'Inspector', 'Date of Inspection', 'Date Created');
             $fields = $this->createAssociateFieldArray($stringFields, $fields);
             $name = array(ucfirst(str_replace('-', ' ', 'All')));
@@ -360,7 +360,7 @@ class Reports extends BaseController {
             switch ($status) {
                 case 'open':
                     $reports = $this->reportsByStatus(array(Reports::CLOSED, Reports::CLOSED_CANCELLED), $inspectionType, true);
-                    $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
+                    $stringFields = array('Customer ID', 'Status_Id', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company', 'Inspection Type',
                         'Inspector', 'Date of Inspection', 'Date Created');
                     $fields = $this->createAssociateFieldArray($stringFields, $fields);
                     $header = 'Open Inspections';
