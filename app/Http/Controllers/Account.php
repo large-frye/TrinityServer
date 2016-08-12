@@ -249,7 +249,7 @@ class Account extends BaseController {
 
     public function getUsers() {
         $users = DB::table('user')
-            ->select('user.id', 'user.email', 'ru.role_id')
+            ->select('user.id', 'user.email', 'ru.role_id', 'up.first_name', 'up.last_name')
             ->leftJoin('user_profiles as up', 'user.id', '=', 'up.user_id')
             ->leftJoin('roles_user as ru', 'user.id', '=', 'ru.user_id')
             ->get();
