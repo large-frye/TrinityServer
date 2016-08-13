@@ -20,12 +20,24 @@ class Admin
 
     public function handle($request, Closure $next)
     {
-        $response = $next($request);
+      $response = $next($request);
 
-        if ($request->session()->get('role') == User::ADMIN) {
-            return $response;
-        }
+      if ($request->session()->get('role') == null) {
+        $user = JWTAuth::parseToken()->authenticate();
+        $roles = DB::table('role_users')->where('user_id', $user->id)->get();
+        $roleId = $roles[0]->role_id;
+        $request->session()->put('role', $roleId);
+        if ($this->isAdmin($roleId))
+          return $response;
+      }
 
-        return response()->json(['error' => 'Not authorized'], 401);
+      if ($this->isAdmin($request->session()->get('role')))
+        return $response;
+
+      return response()->json(['error' => 'Not authorized'], 401);
+    }
+
+    private function isAdmin($roleId) {
+      return $roleId == User::ADMIN;
     }
 }

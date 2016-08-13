@@ -21,6 +21,7 @@ class Logger
     const TEXT = 'text';
   const ADJUSTER = 'adjuster';
   const INSPECTOR = 'inspector';
+  const SPACE = ' ';
 
     /**
      * Log when a change has happened to a work order.
@@ -136,9 +137,14 @@ class Logger
                   array_push($items, array('old' => $oldDate, 'new' => $newDate, 'key' => $item));
                 } else {
                   if (in_array($item, array('inspector_id'))) {
-                    $prevInspector = DB::table('user')->where('id', $value)->get();
-                    $inspector = DB::table('user')->where('id', $needle[$item])->get();
-                    array_push($items, array('old' => $prevInspector[0]->email, 'new' => $inspector[0]  ->email, 'key' => 'The inspector'));
+//                    $prevInspector = DB::table('user')->leftJoin('user_profiles', 'user.id', '=', 'user_profiles.user_id')
+//                      ->where('id', $value)->get();
+//                    $inspector = DB::table('user')->leftJoin('user_profiles', 'user.id', '=', 'user_profiles.user_id')
+//                      ->where('id', $needle[$item])->get();
+
+                    // $prevName = Logger::concat($prevInspector[0]->first_name, $prevInspector[0]->last_name);
+                    // $currentName = Logger::concat($inspector[0]->first_name, $inspector[0]->last_name);
+                    array_push($items, array('old' => 'frye', 'new' => 'andrew', 'key' => 'The inspector'));
                   } else {
                     array_push($items, array('old' => $value, 'new' => $needle[$item], 'key' => $item));
                   }
@@ -147,6 +153,22 @@ class Logger
             }
         }
         return $items;
+    }
+
+    private static function concat() {
+      $num = func_num_args();
+      $args = func_get_args();
+      $ret = '';
+
+      for ($i = 0; $i < $num; $i++) {
+        if ($i + 1 == $num) {
+          $ret .= $args[$i];
+        } else {
+          $ret .= $args[$i] . Logger::SPACE;
+        }
+      }
+
+      return $ret;
     }
 
 }
