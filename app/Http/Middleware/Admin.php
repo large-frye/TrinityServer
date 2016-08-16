@@ -27,17 +27,17 @@ class Admin
         $roles = DB::table('role_users')->where('user_id', $user->id)->get();
         $roleId = $roles[0]->role_id;
         $request->session()->put('role', $roleId);
-        if ($this->isAdmin($roleId))
+        if ($this->isAdminOrOffice($roleId))
           return $response;
       }
 
-      if ($this->isAdmin($request->session()->get('role')))
+      if ($this->isAdminOrOffice($request->session()->get('role')))
         return $response;
 
       return response()->json(['error' => 'Not authorized'], 401);
     }
 
-    private function isAdmin($roleId) {
-      return $roleId == User::ADMIN;
+    private function isAdminOrOffice($roleId) {
+      return in_array($roleId, array(User::ADMIN, User::OFFICE));
     }
 }

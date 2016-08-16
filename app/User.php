@@ -16,6 +16,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     const ADMIN = 2;
     const INSPECTOR = 3;
     const CLIENT = 4;
+  const OFFICE = 5;
 
     /**
      * The database table used by the model.

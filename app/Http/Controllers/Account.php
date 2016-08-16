@@ -136,6 +136,9 @@ class Account extends BaseController {
                 case User::CLIENT:
                     $user->appRole = 'client';
                     break;
+              case User::OFFICE:
+                $user->appRole = 'office';
+                break;
             }
 
             $credentials = $this->get_credentials($request);
