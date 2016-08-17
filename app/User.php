@@ -79,8 +79,14 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function findInspectors($type)
     {
-        $inspectors = $this->findUsersByType($type);
-        return response()->json(compact('inspectors'));
+      $inspectors = $this->findUsersByType($type);
+      if ($inspectors != null) {
+        foreach ($inspectors as $inspector) {
+          $inspector->profile;
+        }
+      }
+
+      return response()->json(compact('inspectors'));
     }
 
     /**
