@@ -174,10 +174,13 @@ class Account extends BaseController {
 
     try {
       $input = \Illuminate\Support\Facades\Input::all();
-      \App\User::where('email', $request->email)->firstOrFail();
       unset($input['query_string']);
 
-      $user = User::where('email', $request->email)->firstOrFail();
+      if (!$request->has('id')) {
+        return $this->create_user($request);
+      }
+
+      $user = User::where('id', $request->id)->firstOrFail();
       $user->email = $request->email;
 
       if ($request->has('password')) {
@@ -201,7 +204,7 @@ class Account extends BaseController {
 
     } catch (ModelNotFoundException $e) {
       if ($e->getMessage() == 'No query results for model [App\User].') {
-        $this->create_user($request);
+        return $this->create_user($request);
       } else {
         return response()->json(['error' => $e->getMessage()], 500);
       }
