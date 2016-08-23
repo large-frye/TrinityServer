@@ -236,8 +236,8 @@ class Account extends BaseController {
     $rolesUser = RolesUser::where('user_id', $id)->delete();;
 
     $user->delete();
-    $users = User::all();
-    return response()->json(compact('users'), 200);
+    $usersByRoles = $this->getUsers(false);
+    return response()->json(compact('usersByRoles'), 200);
   }
 
   public function getAdjusters($type) {
@@ -252,7 +252,7 @@ class Account extends BaseController {
     return $this->user->findInsuredProfile($id);
   }
 
-  public function getUsers() {
+  public function getUsers($json = true) {
     $users = DB::table('user')
       ->select('user.id', 'user.email', 'ru.role_id', 'up.first_name', 'up.last_name')
       ->leftJoin('user_profiles as up', 'user.id', '=', 'up.user_id')
@@ -269,7 +269,10 @@ class Account extends BaseController {
       }
     }
 
-    return response()->json(compact('usersByRoles'), 200);
+    if ($json)
+      return response()->json(compact('usersByRoles'), 200);
+
+    return $usersByRoles;
   }
 
   public function getUser($id) {
