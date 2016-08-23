@@ -369,7 +369,7 @@ class Reports extends BaseController {
 
         case 'inspector-attention-required':
           $reports = $this->getReportsByAttType(Reports::ALERT_TO_INSPECTOR, $inspectionType);
-          $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Inspector',
+          $stringFields = array('Customer ID', 'Claim Num', 'Status_Id', 'Insured', 'State', 'Adjuster', 'Inspector',
             'Date of Inspection', 'Time of Inspection', 'Inspection Type', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Inspections Requiring Inspector\'s Attention';
@@ -377,7 +377,7 @@ class Reports extends BaseController {
 
         case 'office-attention-required':
           $reports = $this->getReportsByAttType(array(Reports::ALERT_OFFICE, Reports::ALERT_FROM_INSPECTOR), $inspectionType);
-          $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+          $stringFields = array('Customer ID', 'Claim Num', 'Status_Id', 'Insured', 'State', 'Adjuster', 'Insurance Company',
             'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Inspections Requiring Office Attention';
@@ -385,7 +385,7 @@ class Reports extends BaseController {
 
         case 'admin-attention-required':
           $reports = $this->getReportsByAttType(Reports::ALERT_ADMIN, $inspectionType);
-          $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'State', 'Adjuster', 'Insurance Company',
+          $stringFields = array('Customer ID', 'Claim Num', 'Status_Id', 'Insured', 'State', 'Adjuster', 'Insurance Company',
             'Date of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Inspections Requiring Admin Attention';
