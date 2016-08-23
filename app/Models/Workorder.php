@@ -56,6 +56,7 @@ class Workorder extends Model {
      */
     public function saveWorkorder() {
         $data = (object) Input::all();
+      $adjusterId = null;
 
         try {
             // See if client property has an id field.
@@ -113,7 +114,12 @@ class Workorder extends Model {
             foreach ($data as $key => $value) {
                 if (!in_array($key, array('query_string', 'updated_by'))) {
                     if ($key == 'adjuster') {
+                      if ($adjusterId != null) {
                         $workorder['adjuster_id'] = $adjusterId;
+                      } else {
+                        unset($workorder['adjuster']);
+                      }
+
                     } else if ($key !== 'inspector') {
                         $workorder[$key] = $value;
                     }
@@ -161,14 +167,16 @@ class Workorder extends Model {
             $order = Workorder::find($id);
             $order->adjuster;
 
+          if ($order->adjuster != null) {
             if ($order->adjuster->profile != null) {
-                $order->adjuster->profile;
-                $order->adjuster->rolesUser;
-                if (isset($order->inspector_id) && $order->inspector_id != null) {
-                    $order->inspector;
-                    $order->inspector->profile;
-                }
+              $order->adjuster->profile;
+              $order->adjuster->rolesUser;
+              if (isset($order->inspector_id) && $order->inspector_id != null) {
+                $order->inspector;
+                $order->inspector->profile;
+              }
             }
+          }
 
             // Add our inspection type
             switch ($order->inspection_type) {
