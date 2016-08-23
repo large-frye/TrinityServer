@@ -752,13 +752,14 @@ class Reports extends BaseController {
       DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%Y-%m-%d") as date_of_inspection'),
       DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%h:%m:%s") as time_of_inspection'),
       'work_order.created_at as date_created', 'work_order.city', 'work_order.claim_num',
-      'u2.name as inspector');
+      DB::raw('CONCAT(p2.first_name, " ", p2.last_name) as inspector'));
 
     $query = DB::table('work_order');
     $query->select($select)
       ->leftJoin('user as u', 'work_order.adjuster_id', '=', 'u.id')
       ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
       ->leftJoin('user_profiles as p', 'u.id', '=', 'p.user_id')
+      ->leftJoin('user_profiles as p2', 'u2.id', '=', 'p2.user_id')
       ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
 
     // Delimit by inspection type
