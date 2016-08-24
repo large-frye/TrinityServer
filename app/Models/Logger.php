@@ -140,8 +140,13 @@ class Logger {
               ->where('user.id', $value)->get();
             $inspector = DB::table('user')->leftJoin('user_profiles', 'user.id', '=', 'user_profiles.user_id')
               ->where('user.id', $needle[$item])->get();
-             $prevName = Logger::concat($prevInspector[0]->first_name, $prevInspector[0]->last_name);
-             $currentName = Logger::concat($inspector[0]->first_name, $inspector[0]->last_name);
+            if ($prevInspector != null) {
+              $prevName = Logger::concat($prevInspector[0]->first_name, $prevInspector[0]->last_name);
+            } else {
+              $prevName = 'No inspector';
+            }
+
+            $currentName = Logger::concat($inspector[0]->first_name, $inspector[0]->last_name);
             array_push($items, array('old' => $prevName, 'new' => $currentName, 'key' => 'The inspector'));
           } else {
             array_push($items, array('old' => $value, 'new' => $needle[$item], 'key' => $item));
