@@ -749,6 +749,7 @@ class Reports extends BaseController {
     $select = array('work_order.id as customer_id', 'work_order.status_id',
       DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'), 'u.name as adjuster',
       'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type',
+      'date_of_inspection as raw_date_of_inspection',
       DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%Y-%m-%d") as date_of_inspection'),
       DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%h:%i %p") as time_of_inspection'),
       'work_order.created_at as date_created', 'work_order.city', 'work_order.claim_num',
