@@ -693,6 +693,8 @@ class Reports extends BaseController {
 
     // convert all children to array
     foreach ($data as $key => $child) {
+      unset($child->status_id);
+      unset($child->raw_date_of_inspection);
       $data[$key] = (array)$child;
     }
 
@@ -746,7 +748,8 @@ class Reports extends BaseController {
    * @return mixed
    */
   private function getBaseQuery($metaKey = false, $inspectionType) {
-    $select = array('work_order.id as customer_id', 'work_order.status_id', 'work_order.last_name',
+    $select = array('work_order.id as customer_id', 'work_order.status_id', 'work_order_statuses.name as status',
+      'work_order.last_name',
       DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'),
       'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type',
       'date_of_inspection as raw_date_of_inspection',
@@ -762,6 +765,7 @@ class Reports extends BaseController {
       ->leftJoin('user as u2', 'work_order.inspector_id', '=', 'u2.id')
       ->leftJoin('user_profiles as p', 'u.id', '=', 'p.user_id')
       ->leftJoin('user_profiles as p2', 'u2.id', '=', 'p2.user_id')
+      ->leftJoin('work_order_statuses', 'work_order.status_id', '=', 'work_order_statuses.id')
       ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
 
     // Delimit by inspection type
