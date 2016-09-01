@@ -442,7 +442,7 @@ class Reports extends BaseController {
         case 'scheduled':
           $reports = $this->reportsByStatus(Reports::SCHEDULED, $inspectionType);
           $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State',
-            'Adjuster', 'Date of Inspection', 'Inspection Type', 'Date Created');
+            'Adjuster', 'Date of Inspection', 'Time of Inspection', 'Inspector', 'Inspection Type', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Scheduled Inspections';
           break;
