@@ -746,7 +746,7 @@ class Reports extends BaseController {
    * @return mixed
    */
   private function getBaseQuery($metaKey = false, $inspectionType) {
-    $select = array('work_order.id as customer_id', 'work_order.status_id',
+    $select = array('work_order.id as customer_id', 'work_order.status_id', 'work_order.last_name',
       DB::raw('CONCAT(work_order.first_name, " ", work_order.last_name) as insured'),
       'p.insurance_company', 'work_order.state', 'inspection_types.name as inspection_type',
       'date_of_inspection as raw_date_of_inspection',
