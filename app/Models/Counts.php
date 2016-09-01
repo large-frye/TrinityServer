@@ -94,7 +94,7 @@ class Counts extends Model {
         return DB::table('work_order')
             ->select(
                 DB::raw("CAST(SUM(CASE WHEN alert_to_inspector = 1 then 1 else 0 end) AS UNSIGNED) inspector_attention_required"),
-                DB::raw("CAST(SUM(CASE WHEN alert_office = 1 then 1 else 0 end) AS UNSIGNED) office_attention_required"),
+                DB::raw("CAST(SUM(CASE WHEN alert_office = 1 || alert_from_inspector = 1 then 1 else 0 end) AS UNSIGNED) office_attention_required"),
                 DB::raw("CAST(SUM(CASE WHEN alert_admin = 1 then 1 else 0 end) AS UNSIGNED) admin_attention_required"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::ON_HOLD . " then 1 else 0 end) AS UNSIGNED) on_hold"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::ON_HOLD . " then 1 else 0 end) AS UNSIGNED) on_hold"),
