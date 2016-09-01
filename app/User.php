@@ -100,6 +100,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
             foreach($users as $user) {
                 $user->profile;
             }
+            $user->profile->orderBy('last_name', 'DESC');
             return $users;
         } catch (Exception $e) {
             return response()->json(compact('e'));

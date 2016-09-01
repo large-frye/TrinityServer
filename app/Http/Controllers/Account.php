@@ -257,6 +257,8 @@ class Account extends BaseController {
       ->select('user.id', 'user.email', 'ru.role_id', 'up.first_name', 'up.last_name')
       ->leftJoin('user_profiles as up', 'user.id', '=', 'up.user_id')
       ->leftJoin('roles_user as ru', 'user.id', '=', 'ru.user_id')
+      ->orderBy('up.first_name', 'DESC')
+      ->orderBy('up.last_name', 'DESC')
       ->get();
 
     $usersByRoles = [];

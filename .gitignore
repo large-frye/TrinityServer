@@ -1,3 +1,5 @@
 .env
 resources/docker/*
 public/reports/*.pdf
+*.idea
+*.iml
