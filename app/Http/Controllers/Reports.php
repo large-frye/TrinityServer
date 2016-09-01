@@ -463,7 +463,7 @@ class Reports extends BaseController {
           $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Inspection Time',
             'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
-          $header = 'Inspected That Have Been Completed';
+          $header = 'Inspections That Have Been Completed';
           break;
 
         case 'pre-invoice':
