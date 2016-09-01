@@ -62,10 +62,11 @@ class Workorder extends Model {
             // See if client property has an id field.
             if (isset($data->adjuster)) {
                 $adjuster = (object) $data->adjuster;
-                if (isset($adjuster->id)) {
-                    $adjusterId = $adjuster->id;
+                if (isset($adjuster->user_id) || isset($adjuster->id)) {
+                  $id = isset($adjuster->user_id) ? $adjuster->user_id : $adjuster->id;
+                    $adjusterId = $id;
                     if (isset($adjuster->profile)) {
-                        DB::table('user_profiles')->where('user_id', $adjuster->id)->update($adjuster->profile);
+                        DB::table('user_profiles')->where('user_id', $id)->update($adjuster->profile);
                     }
                 } else {
                     // Create adjuster

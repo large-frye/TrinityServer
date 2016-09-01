@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use League\Flysystem\Exception;
 use Symfony\Component\Debug\Exception\FatalErrorException;
+use Illuminate\Support\Facades\DB;
 
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract
 {
@@ -65,9 +66,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     {
         $adjusters = $this->findUsersByType($type);
         foreach ($adjusters as $adjuster) {
-            $adjuster->profile;
-            $adjuster->title = $adjuster->profile->first_name . ' ' . $adjuster->profile->last_name .
-                ' (' . $adjuster->profile->insurance_company . ')';
+            $adjuster->title = $adjuster->first_name . ' ' . $adjuster->last_name .
+                ' (' . $adjuster->insurance_company . ')';
         }
 
         return response()->json(compact('adjusters'));
@@ -80,11 +80,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function findInspectors($type)
     {
       $inspectors = $this->findUsersByType($type);
-      if ($inspectors != null) {
-        foreach ($inspectors as $inspector) {
-          $inspector->profile;
-        }
-      }
+//      if ($inspectors != null) {
+//        foreach ($inspectors as $inspector) {
+//          $inspector->profile;
+//        }
+//      }
 
       return response()->json(compact('inspectors'));
     }
@@ -96,12 +96,16 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function findUsersByType($type)
     {
         try {
-            $users = Roles::find($type)->users()->get();
-            foreach($users as $user) {
-                $user->profile;
-            }
-            $user->profile->orderBy('last_name', 'DESC');
-            return $users;
+          $users = DB::table('user')
+            ->select('user.id', 'user.email', 'ru.role_id', 'up.*')
+            ->leftJoin('user_profiles as up', 'user.id', '=', 'up.user_id')
+            ->leftJoin('roles_user as ru', 'user.id', '=', 'ru.user_id')
+            ->orderBy('up.first_name')
+            ->orderBy('up.last_name')
+            ->where('ru.role_id', $type)
+            ->get();
+
+          return $users;
         } catch (Exception $e) {
             return response()->json(compact('e'));
         } catch (FatalErrorException $e) {
