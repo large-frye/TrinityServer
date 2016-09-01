@@ -425,7 +425,7 @@ class Reports extends BaseController {
 
         case 'reschedule':
           $reports = $this->reportsByStatus(Reports::RESCHEDULE, $inspectionType);
-          $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'Date of Last Contact', 'City', 'State', 'Adjuster',
+          $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State', 'Adjuster',
             'Date of Inspection', 'Inspection Type', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Inspections That Need To Be Rescheduled';
@@ -441,7 +441,7 @@ class Reports extends BaseController {
 
         case 'scheduled':
           $reports = $this->reportsByStatus(Reports::SCHEDULED, $inspectionType);
-          $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'Date of Last Contact', 'City', 'State',
+          $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State',
             'Adjuster', 'Date of Inspection', 'Inspection Type', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Scheduled Inspections';
