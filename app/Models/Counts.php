@@ -108,7 +108,7 @@ class Counts extends Model {
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::REPORTING . " then 1 else 0 end) AS UNSIGNED) reporting"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::INVOICE_ALACRITY . " then 1 else 0 end) AS UNSIGNED) inv_alacrity"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::INVOICING . " then 1 else 0 end) AS UNSIGNED) invoicing"),
-                DB::raw("CAST(SUM(CASE WHEN status_id IN (" . Reports::CANCELLED . ", " . Reports::CLOSED_CANCELLED . " ) then 1 else 0 end) AS UNSIGNED) cancelled")
+                DB::raw("CAST(SUM(CASE WHEN status_id IN (" . Reports::CANCELLED . " ) then 1 else 0 end) AS UNSIGNED) cancelled")
             )
             ->get();
     }
