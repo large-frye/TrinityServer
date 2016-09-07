@@ -12,9 +12,18 @@ use DateTime;
 
 class Count
 {
+  const ONE_DAY = 86400;
+
     // All count measures need to be in ms.
     public function __construct()
     {
+      $time = time();
+
+      // Other dates for reports will most likely have to be updated.
+      $this->tomorrowStart = (strtotime(date('Y-m-d 00:00:00'), $time) + self::ONE_DAY) * 1000;
+      $this->tomorrowEnd = (strtotime(date('Y-m-d 23:59:59'), $time) + self::ONE_DAY) * 1000;
+
+
         $this->today = strtotime('today') * 1000;
         $this->tomorrow = strtotime('tomorrow') * 1000;
         $this->nextTwoDays = strtotime('+2 day') * 1000;

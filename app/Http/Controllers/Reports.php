@@ -101,7 +101,7 @@ class Reports extends BaseController {
       'cancelled' => ReportType::createReport(Reports::CANCELLED, 'cancelled', false),
       'cancelled-closed' => ReportType::createReport(Reports::CLOSED_CANCELLED, 'cancelled-closed', false),
       'today' => ReportType::createReport(null, 'today', false, [$this->countModel->today, $this->countModel->tomorrow]),
-      'tomorrow' => ReportType::createReport(null, 'tomorrow', false, [$this->countModel->tomorrow, $this->countModel->nextTwoDays]),
+      'tomorrow' => ReportType::createReport(null, 'tomorrow', false, [$this->countModel->tomorrowStart, $this->countModel->tomorrowEnd]),
       'yesterday' => ReportType::createReport(null, 'yesterday', false, [$this->countModel->yesterday, $this->countModel->today]),
       'this-week' => ReportType::createReport(null, 'this-week', false, [$this->countModel->thisWeek, $this->countModel->nextWeek]),
       'next-week' => ReportType::createReport(null, 'next-week', false, [$this->countModel->nextWeek, $this->countModel->twoNextWeek]),
@@ -243,7 +243,7 @@ class Reports extends BaseController {
 
         case 'tomorrow':
           $reports = $this->getBaseQuery(false, $inspectionType)
-            ->whereBetween('date_of_inspection', [$this->countModel->tomorrow, $this->countModel->nextTwoDays])
+            ->whereBetween('date_of_inspection', [$this->countModel->tomorrowStart, $this->countModel->tomorrowEnd])
             ->where('inspector_id', $id)
             ->get();
           $stringFields = array('Customer ID', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
@@ -450,7 +450,7 @@ class Reports extends BaseController {
         case 'post-inspection-date':
           $reports = $this->getBaseQuery(false, $inspectionType)
             ->where('status_id', '=', Reports::SCHEDULED)
-            ->where('date_of_inspection', '<', time() * 1000)
+            ->where('date_of_inspection', '<', ((time() - Count::ONE_DAY) * 1000))
             ->get();
           $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Time of Inspection',
             'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
@@ -542,7 +542,7 @@ class Reports extends BaseController {
 
         case 'tomorrow':
           $reports = $this->getBaseQuery(false, $inspectionType)
-            ->whereBetween('date_of_inspection', [$this->countModel->tomorrow, $this->countModel->nextTwoDays])
+            ->whereBetween('date_of_inspection', [$this->countModel->tomorrowStart, $this->countModel->tomorrowEnd])
             ->get();
           $stringFields = array('Customer ID', 'Claim Num', 'Insured', 'City', 'State', 'Inspector', 'Date of Inspection',
             'Time of Inspection', 'Inspection Type', 'Adjuster', 'Date Created');
