@@ -91,6 +91,9 @@ class Counts extends Model {
             // Todo:
         }
 
+        // This should be done in mySQL
+      $postInspectionDate = (time() - Count::ONE_DAY) * 1000;
+
         return DB::table('work_order')
             ->select(
                 DB::raw("CAST(SUM(CASE WHEN alert_to_inspector = 1 then 1 else 0 end) AS UNSIGNED) inspector_attention_required"),
@@ -103,7 +106,7 @@ class Counts extends Model {
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::RESCHEDULE . " then 1 else 0 end) AS UNSIGNED) reschedule"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::IN_PROCESS . " then 1 else 0 end) AS UNSIGNED) in_process"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::SCHEDULED . " then 1 else 0 end) AS UNSIGNED) scheduled"),
-                DB::raw("CAST(SUM(CASE WHEN date_of_inspection < now() && status_id = " . Reports::SCHEDULED . " then 1 else 0 end) AS UNSIGNED) post_inspection_date"),
+                DB::raw("CAST(SUM(CASE WHEN date_of_inspection <= {$postInspectionDate} && status_id = " . Reports::SCHEDULED . " then 1 else 0 end) AS UNSIGNED) post_inspection_date"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::INSPECTED . " then 1 else 0 end) AS UNSIGNED) inspected"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::REPORTING . " then 1 else 0 end) AS UNSIGNED) reporting"),
                 DB::raw("CAST(SUM(CASE WHEN status_id = " . Reports::INVOICE_ALACRITY . " then 1 else 0 end) AS UNSIGNED) inv_alacrity"),
