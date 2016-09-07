@@ -452,7 +452,7 @@ class Reports extends BaseController {
             ->where('status_id', '=', Reports::SCHEDULED)
             ->where('date_of_inspection', '<', time() * 1000)
             ->get();
-          $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Inspection Time',
+          $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Time of Inspection',
             'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Inspections That Are Past Their Inspection Date';
@@ -460,7 +460,7 @@ class Reports extends BaseController {
 
         case 'inspected':
           $reports = $this->reportsByStatus(Reports::INSPECTED, $inspectionType);
-          $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Inspection Time',
+          $stringFields = array('Customer ID', 'Claim Num', 'Date of Inspection', 'Inspector', 'Time of Inspection',
             'Inspection Outcome', 'Insured', 'State', 'Adjuster', 'Date Created');
           $fields = $this->createAssociateFieldArray($stringFields, $fields);
           $header = 'Inspections That Have Been Completed';
@@ -756,6 +756,7 @@ class Reports extends BaseController {
       DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%Y-%m-%d") as date_of_inspection'),
       DB::raw('DATE_FORMAT(FROM_UNIXTIME(date_of_inspection / 1000), "%h:%i %p") as time_of_inspection'),
       'work_order.created_at as date_created', 'work_order.city', 'work_order.claim_num',
+      'inspection_outcomes.name as inspection_outcome',
       DB::raw('CONCAT(p.first_name, " ", p.last_name) as adjuster'),
       DB::raw('CONCAT(p2.first_name, " ", p2.last_name) as inspector'));
 
@@ -766,6 +767,7 @@ class Reports extends BaseController {
       ->leftJoin('user_profiles as p', 'u.id', '=', 'p.user_id')
       ->leftJoin('user_profiles as p2', 'u2.id', '=', 'p2.user_id')
       ->leftJoin('work_order_statuses', 'work_order.status_id', '=', 'work_order_statuses.id')
+      ->leftJoin('inspection_outcomes', 'work_order.inspection_outcome', '=', 'inspection_outcomes.id')
       ->leftJoin('inspection_types', 'work_order.inspection_type', '=', 'inspection_types.id');
 
     // Delimit by inspection type
